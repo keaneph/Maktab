@@ -1,0 +1,12 @@
+# object files and archives
+*.[oa]
+
+# backup/temp files
+*~ 
+
+# vs files
+.vs/ 
+.vscode/ 
+
+# env files
+*.env 
