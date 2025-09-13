@@ -4,9 +4,11 @@ import * as React from "react"
 
 import {
   ColumnDef,
+  ColumnFiltersState,
   SortingState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -22,6 +24,7 @@ import {
 } from "@/components/ui/table"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -34,13 +37,39 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
 
-    const table = useReactTable({data, columns, getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(), onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(), state: {sorting,}
+    const [globalFilter, setGlobalFilter] = React.useState("")
+
+    const table = useReactTable({
+      data, 
+      columns, 
+      state: {
+        sorting, 
+        globalFilter,
+      },
+      getCoreRowModel: getCoreRowModel(),
+      getPaginationRowModel: getPaginationRowModel(), onSortingChange: setSorting,
+      getSortedRowModel: getSortedRowModel(), getFilteredRowModel: getFilteredRowModel(), 
+      onGlobalFilterChange: setGlobalFilter,
+
+      globalFilterFn: (row, columnId, filterValue) => {
+      // Search across multiple columns
+      const search = filterValue.toLowerCase()
+      const code = (row.getValue("code") as string)?.toLowerCase() ?? ""
+      const name = (row.getValue("name") as string)?.toLowerCase() ?? ""
+
+      return code.includes(search) || name.includes(search)
+  },
   })
 
   return (
     <div>
+      <div className="flex items-center py-4">
+        <Input placeholder="Filter colleges..." 
+          value={globalFilter ?? ""}
+          onChange={(event) => setGlobalFilter(event.target.value)}
+          className="max-w-sm"
+        />
+    </div>
     <div className="overflow-hidden rounded-md border">
       <Table>
         <TableHeader>
