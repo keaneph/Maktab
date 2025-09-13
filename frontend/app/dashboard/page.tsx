@@ -2,10 +2,16 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header"; 
 import { cookies } from "next/headers";
 
+import collegeData from "@/app/colleges/college-data.json"
+import programData from "@/app/programs/program-data.json"
+import studentData from "@/app/students/student-data.json"
+
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+
+import { SectionCards } from "@/components/section-cards";
 
 export default async function DashboardPage() {
     const cookieStore = await cookies();
@@ -20,16 +26,19 @@ export default async function DashboardPage() {
             } as React.CSSProperties
         }>
         <AppSidebar variant="inset"/>
-        <SidebarInset>
-            <SiteHeader title="Dashboard" />
+         <SidebarInset>
+            <SiteHeader title="Colleges"/>
             <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="px-4 lg:px-6">
+              <div className="@container/main flex flex-1 flex-col gap-2">
+                <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                  <SectionCards 
+                  collegeCount={collegeData.length} 
+                  programCount={programData.length}
+                  studentCount={studentData.length}
+                 />
               </div>
             </div>
           </div>
-        </div>
         </SidebarInset>
     </SidebarProvider>
   )

@@ -53,6 +53,11 @@
         "id": 11,
         "code": "CS101",
         "name": "Computer Science 111"
+    },
+    {
+        "id": 12,
+        "code": "CS101",
+        "name": "Computer Science 112"
     }
 
 ]

@@ -11,7 +11,6 @@ import {
 
 import {
   ColumnDef,
-  ColumnFiltersState,
   SortingState,
   flexRender,
   getCoreRowModel,
@@ -132,11 +131,12 @@ export function DataTable<TData, TValue>({
         </TableBody>
       </Table>
     </div>
+    {/**pagination*/}
     <div className="text-muted-foreground flex-1 text-sm px-0 py-2">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8 py-2">
+      <div className="flex items-center justify-end space-x-6 lg:space-x-8 py-2">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select

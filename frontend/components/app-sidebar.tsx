@@ -46,8 +46,8 @@ const items = [
     icon: User,
   },
   {
-    title: "Settings",
-    url: "/settings",
+    title: "Miscellaneous",
+    url: "/miscellaneous",
     icon: Settings,
   },
 ]
