@@ -39,17 +39,20 @@ export function DataTable<TData, TValue>({
 
     const [globalFilter, setGlobalFilter] = React.useState("")
 
+    const [rowSelection, setRowSelection] = React.useState({})
+
     const table = useReactTable({
       data, 
       columns, 
       state: {
         sorting, 
         globalFilter,
+        rowSelection,
       },
       getCoreRowModel: getCoreRowModel(),
       getPaginationRowModel: getPaginationRowModel(), onSortingChange: setSorting,
       getSortedRowModel: getSortedRowModel(), getFilteredRowModel: getFilteredRowModel(), 
-      onGlobalFilterChange: setGlobalFilter,
+      onGlobalFilterChange: setGlobalFilter, onRowSelectionChange: setRowSelection,
 
       globalFilterFn: (row, columnId, filterValue) => {
       // Search across multiple columns

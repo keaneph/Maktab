@@ -1,6 +1,7 @@
 import { columns, Colleges } from "./columns"
 import { DataTable } from "./datatable"
 
+
 async function getData(): Promise<Colleges[]> {
   return [
     {
@@ -63,7 +64,7 @@ export default async function DemoPage() {
   const data = await getData()
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto p-4 py-10">
       <DataTable columns={columns} data={data} />
     </div>
   )
