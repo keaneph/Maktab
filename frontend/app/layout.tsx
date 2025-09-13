@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
+import { ActiveThemeProvider } from "@/components/active-theme"
+import { cookies } from "next/headers";
+import { cn } from "@/lib/utils";
+
+const META_THEME_COLOR = {
+  light: "#ffffff",
+  dark: "#09090b",
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,17 +31,26 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore= await cookies();
+  const activeThemeValue = cookieStore.get("theme")?.value
+  const isScaled = activeThemeValue?.endsWith("-scaled")
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={cn ("bg-background overscroll-none font-sans antialiased",
+        activeThemeValue ? `theme-${activeThemeValue}` : "",
+        isScaled ? "theme-scaled" : "",
+      )}>
       <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
+            enableColorScheme
           >
-        {children}
+            <ActiveThemeProvider initialTheme={activeThemeValue}>
+              {children}
+        </ActiveThemeProvider>
         </ThemeProvider>
       </body>
     </html>
