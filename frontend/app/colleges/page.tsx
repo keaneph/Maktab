@@ -1,71 +1,40 @@
 import { columns, Colleges } from "./columns"
 import { DataTable } from "./datatable"
+import data from "./data.json"
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header"; 
+import { cookies } from "next/headers";
 
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
 
-async function getData(): Promise<Colleges[]> {
-  return [
-    {
-      code: "CS101",
-      name: "Computer Science 101",
-    },
-    {
-      code: "MATH102",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH103",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH104",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH105",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH106",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH107",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH108",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH109",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH110",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH111",
-      name: "Mathematics 101",
-    },
-    {
-      code: "MATH112",
-      name: "Mathematics 101",
-    },
-
-    {
-      code: "MATH113",
-      name: "Mathematics 101",
-    },
-  ]
-}
-
-export default async function DemoPage() {
-  const data = await getData()
-
+export default async function CollegesPage() {
+    const cookieStore = await cookies();
+    const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
   return (
-    <div className="container mx-auto p-4 py-10">
-      <DataTable columns={columns} data={data} />
-    </div>
+    <SidebarProvider 
+        defaultOpen={defaultOpen}
+        style={
+            {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+            } as React.CSSProperties
+        }>
+        <AppSidebar variant="inset"/>
+        <SidebarInset>
+            <SiteHeader title="Colleges"/>
+            <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <div className="px-4 lg:px-6">
+                <DataTable columns={columns} data={data} />
+              </div>
+            </div>
+          </div>
+        </div>
+        </SidebarInset>
+    </SidebarProvider>
   )
 }

@@ -52,11 +52,10 @@ const items = [
   },
 ]
 
-
-export function AppSidebar() {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -71,6 +70,7 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <SidebarContent>
       <SidebarGroup>
         <SidebarGroupContent className="flex flex-col gap-2">
           <SidebarMenu>
@@ -90,6 +90,7 @@ export function AppSidebar() {
               </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
+      </SidebarContent>
     </Sidebar>
   )
 }
