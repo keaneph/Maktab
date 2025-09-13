@@ -1,6 +1,13 @@
 "use client"
 
-import { TreePalm, Home, School, GraduationCap, User, Settings  } from "lucide-react"
+import { 
+  TreePalm, 
+  Home, 
+  School, 
+  GraduationCap, 
+  User, 
+  Settings  
+  } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
