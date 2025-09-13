@@ -1,30 +1,31 @@
 "use client"
 
+import Link from "next/link"
+
+import { usePathname } from "next/navigation"
+
+import { NavMain } from "@/components/nav-main"
+
 import { 
   TreePalm, 
   Home, 
   School, 
   GraduationCap, 
   User, 
-  Settings  
-  } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+  Settings,  
+} from "lucide-react"
 
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
   SidebarHeader,
-  SidebarGroupLabel,
-  SidebarGroupContent,
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenu,
+  SidebarGroup,
+  SidebarGroupContent,
 } from "@/components/ui/sidebar"
 
-
-// Menu items.
 const items = [
   {
     title: "Dashboard",
@@ -53,38 +54,44 @@ const items = [
   },
 ]
 
+
 export function AppSidebar() {
   const pathname = usePathname()
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenuButton className="flex items-center gap-2 peer-data-[active=true]/menu-button:opacity-100">
-          <TreePalm className="h-5 w-5" />
-          <span>Maktab</span>
-        </SidebarMenuButton>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+            asChild 
+            className="flex items-center gap-2 peer-data-[active=true]/menu-button:opacity-100">
+              <Link href={items[0].url}>
+                <TreePalm className="!size-5" />
+                  <span className="text-base font-semibold">Maktab</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => {
-                const isActive = pathname.startsWith(item.url) // highlight current
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.url} className="flex items-center gap-2">
-                        <item.icon className="h-5 w-5" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+      <SidebarGroup>
+        <SidebarGroupContent className="flex flex-col gap-2">
+          <SidebarMenu>
+                {items.map((item) => {
+                  const isActive = pathname.startsWith(item.url) // highlight current
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link href={item.url} className="flex items-center gap-2">
+                          <item.icon className="h-5 w-5" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
     </Sidebar>
   )
 }
