@@ -108,7 +108,7 @@ export function SectionCards({
           <div className="line-clamp-1 flex gap-2 font-medium">
             Up 28% in the last 24 hours <TrendingUp className="size-4" />
           </div>
-          <div className="text-muted-foreground">Overall college count increase is 0</div>
+          <div className="text-muted-foreground">Overall site visits increase is 0</div>
         </CardFooter>
       </Card>
     </div>

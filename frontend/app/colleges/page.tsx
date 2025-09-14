@@ -1,4 +1,4 @@
-import { columns, Colleges } from "./columns"
+import { columns } from "./columns"
 import { DataTable } from "./datatable"
 import collegeData from "./college-data.json"
 import programData from "@/app/programs/program-data.json"
