@@ -8,6 +8,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Plus,
+  Search,
 } from "lucide-react"
 
 import {
@@ -38,8 +39,20 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -81,19 +94,57 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <Input placeholder="Filter colleges..." 
-          value={globalFilter ?? ""}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className="max-w-sm"
-        />
-      </div>
-
-      <div className="flex items-center py-4">
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear">
-          <Plus />
-          <span>Add College</span>
-        </Button>
+      {/* search and add div */}
+      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between"> 
+        <div className="flex items-center py-4 w-full md:max-w-sm relative">
+          <Input
+            placeholder="Search colleges..."
+            value={globalFilter ?? ""}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="max-w-sm pr-10" // add padding-right for icon space
+          />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+            <Search className="h-4 w-4" />
+          </span>
+        </div>
+        <div className="flex items-center py-4">
+          <Dialog>
+            <form>
+              <DialogTrigger asChild>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear">
+                  <Plus />
+                  <span>Add College</span>
+                  </Button>
+                </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Add College</DialogTitle>
+                  <DialogDescription>
+                    Add a new college to the list.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4">
+                  <div className="grid gap-3">
+                    <Label htmlFor="college-code-1">Code</Label>
+                    <Input id="college-code-1" name="college-code" defaultValue="CCS" />
+                  </div>
+                  <div className="grid gap-3">
+                    <Label htmlFor="college-name-1">Name</Label>
+                    <Input id="college-name-1" name="college-name" defaultValue="College of Computer Studies" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <Button type="submit">Save changes</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </form>
+          </Dialog>
+        </div>
       </div>
     <div className="overflow-hidden rounded-md border">
       <Table>
