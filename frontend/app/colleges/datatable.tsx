@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Plus,
 } from "lucide-react"
 
 import {
@@ -86,7 +87,14 @@ export function DataTable<TData, TValue>({
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-sm"
         />
-    </div>
+      </div>
+
+      <div className="flex items-center py-4">
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear">
+          <Plus />
+          <span>Add College</span>
+        </Button>
+      </div>
     <div className="overflow-hidden rounded-md border">
       <Table>
         <TableHeader>
