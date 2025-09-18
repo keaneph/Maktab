@@ -1,0 +1,99 @@
+[
+    {
+        "id": 1,
+        "code": "CS101",
+        "name": "Computer Science 101",
+        "college": "Angineering",
+        "dateCreated": "2023-10-01",
+        "addedBy": "admin"
+    },
+    {
+        "id": 2,
+        "code": "CS102",
+        "name": "Computer Science 102",
+        "college": "Bngineering",
+        "dateCreated": "2023-10-02",
+        "addedBy": "bdmin"
+    },
+    {
+        "id": 3,
+        "code": "CS103",
+        "name": "Computer Science 103",
+        "college": "Cngineering",
+        "dateCreated": "2023-10-03",
+        "addedBy": "cdmin"  
+    },
+    {
+        "id": 4,
+        "code": "CS104",
+        "name": "Computer Science 104",
+        "college": "Dngineering",
+        "dateCreated": "2023-10-04",
+        "addedBy": "ddmin"
+    },
+    {
+        "id": 5,
+        "code": "CS105",
+        "name": "Computer Science 105",
+        "college": "Engineering",
+        "dateCreated": "2023-10-05",
+        "addedBy": "edmin"
+    },
+    {
+        "id": 6,
+        "code": "CS106",
+        "name": "Computer Science 106",
+        "college": "Fngineering",
+        "dateCreated": "2023-10-06",
+        "addedBy": "fdmin"
+    },
+    {
+        "id": 7,
+        "code": "CS107",
+        "name": "Computer Science 107",
+        "college": "Gngineering",
+        "dateCreated": "2023-10-07",
+        "addedBy": "gdmin"
+    },
+    {
+        "id": 8,
+        "code": "CS108",
+        "name": "Computer Science 108",
+        "college": "Hngineering",
+        "dateCreated": "2023-10-08",
+        "addedBy": "hdmin"
+    },
+    {
+        "id": 9,
+        "code": "CS109",
+        "name": "Computer Science 109",
+        "college": "Ingineering",
+        "dateCreated": "2023-10-09",
+        "addedBy": "idmin"
+    },
+    {
+        "id": 10,
+        "code": "CS110",
+        "name": "Computer Science 110",
+        "college": "Jngineering",
+        "dateCreated": "2023-10-10",
+        "addedBy": "jdmin"
+    },
+    {
+        "id": 11,
+        "code": "CS111",
+        "name": "Computer Science 111",
+        "college": "Kngineering",
+        "dateCreated": "2023-10-11",
+        "addedBy": "kdmin"
+    },
+    {
+        "id": 12,
+        "code": "CS112",
+        "name": "Computer Science 112",
+        "college": "Lngineering",
+        "dateCreated": "2023-10-12",
+        "addedBy": "ldmin"
+    }
+
+]

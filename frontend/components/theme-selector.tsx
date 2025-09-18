@@ -41,6 +41,14 @@ const SCALED_THEMES = [
     name: "Blue",
     value: "blue-scaled",
   },
+  {
+    name: "Green",
+    value: "green-scaled",
+  },
+  {
+    name: "Amber",
+    value: "amber-scaled",
+  },
 ]
 
 const MONO_THEMES = [

@@ -37,10 +37,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn ("bg-background overscroll-none font-sans antialiased",
-        activeThemeValue ? `theme-${activeThemeValue}` : "",
-        isScaled ? "theme-scaled" : "",
-      )}>
+        <body className={cn ("bg-background overscroll-none font-sans antialiased",
+          activeThemeValue ? `theme-${activeThemeValue}` : "",
+          isScaled ? "theme-scaled" : "",
+        )}>
       <ThemeProvider
             attribute="class"
             defaultTheme="system"
