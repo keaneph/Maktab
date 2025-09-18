@@ -58,6 +58,8 @@ interface DataTableProps<TData, TValue> {
   addDescription?: string;
   /** Custom form fields for the dialog */
   renderAddForm?: React.ReactNode;
+  /** Keys in row to search through */
+  searchKeys?: string[];
 }
 
 export function DataTable<TData, TValue>({
@@ -67,6 +69,7 @@ export function DataTable<TData, TValue>({
   addTitle = "Add Item",
   addDescription = "Add a new item to the list.",
   renderAddForm,
+  searchKeys = [],
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState("");
@@ -87,17 +90,14 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     onRowSelectionChange: setRowSelection,
-    globalFilterFn: (row, columnId, filterValue) => {
-      const search = filterValue.toLowerCase();
-      const code = (row.getValue("code") as string)?.toLowerCase() ?? "";
-      const name = (row.getValue("name") as string)?.toLowerCase() ?? "";
-      const dateCreated = (row.getValue("dateCreated") as string)?.toLowerCase() ?? "";
-      const addedBy = (row.getValue("addedBy") as string)?.toLowerCase() ?? "";
-      const college = (row.getValue("college") as string)?.toLowerCase() ?? "";
-
-      return code.includes(search) || name.includes(search) || dateCreated.includes(search) || addedBy.includes(search) || college.includes(search);
+    globalFilterFn: (row, _columnId, filterValue) => {
+        const search = filterValue.toLowerCase();
+        return searchKeys.some((key) => {
+    const val = (row.getValue(key) as string) ?? "";
+    return val.toString().toLowerCase().includes(search);
+    });
     },
-  });
+    });
 
   return (
     <div>

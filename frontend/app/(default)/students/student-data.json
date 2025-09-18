@@ -1,47 +1,135 @@
 [
     {
         "id": 1,
-        "code": "CS101",
-        "name": "Computer Science 101"
+        "id_no": "2023-0001",
+        "first_name": "AJohn",
+        "last_name": "ADoe",
+        "course": "Computer Science",
+        "year": 1,
+        "gender": "Male",
+        "dateCreated": "2023-10-01",
+        "addedBy": "admin"
     },
     {
         "id": 2,
-        "code": "CS101",
-        "name": "Computer Science 102"
+        "id_no": "2023-0002",
+        "first_name": "BJane",
+        "last_name": "BSmith",
+        "course": "Information Technology",
+        "year": 2,
+        "gender": "Female",
+        "dateCreated": "2023-10-02",
+        "addedBy": "bdmin"
     },
     {
         "id": 3,
-        "code": "CS101",
-        "name": "Computer Science 103"
+        "id_no": "2023-0003",
+        "first_name": "CAlice",
+        "last_name": "CJohnson",
+        "course": "Software Engineering",
+        "year": 3,
+        "gender": "Female",
+        "dateCreated": "2023-10-03",
+        "addedBy": "cdmin"  
     },
     {
         "id": 4,
-        "code": "CS101",
-        "name": "Computer Science 104"
+        "id_no": "2023-0004",
+        "first_name": "DAlice",
+        "last_name": "DJohnson",
+        "course": "Software Engineering",
+        "year": 4,
+        "gender": "Male",
+        "dateCreated": "2023-10-04",
+        "addedBy": "ddmin"
     },
     {
         "id": 5,
-        "code": "CS101",
-        "name": "Computer Science 105"
+         "id_no": "2023-0005",
+        "first_name": "EAlice",
+        "last_name": "EJohnson",
+        "course": "Software Engineering",
+        "year": 1,
+        "gender": "Male",
+        "dateCreated": "2023-10-05",
+        "addedBy": "edmin"
     },
     {
         "id": 6,
-        "code": "CS101",
-        "name": "Computer Science 106"
+         "id_no": "2023-0006",
+        "first_name": "FAlice",
+        "last_name": "FJohnson",
+        "course": "Software Engineering",
+        "year": 2,
+        "gender": "Male",
+        "dateCreated": "2023-10-06",
+        "addedBy": "fdmin"
     },
     {
         "id": 7,
-        "code": "CS101",
-        "name": "Computer Science 107"
+        "id_no": "2023-0007",
+        "first_name": "GAlice",
+        "last_name": "GJohnson",
+        "course": "Software Engineering",
+        "year": 3,
+        "gender": "Male",
+        "dateCreated": "2023-10-07",
+        "addedBy": "gdmin"
     },
     {
         "id": 8,
-        "code": "CS101",
-        "name": "Computer Science 108"
+        "id_no": "2023-0008",
+        "first_name": "HAlice",
+        "last_name": "HJohnson",
+        "course": "Software Engineering",
+        "year": 4,
+        "gender": "FeMale",
+        "dateCreated": "2023-10-08",
+        "addedBy": "hdmin"
     },
     {
         "id": 9,
-        "code": "CS101",
-        "name": "Computer Science 109"
+        "id_no": "2023-0009",
+        "first_name": "IAlice",
+        "last_name": "IJohnson",
+        "course": "Software Engineering",
+        "year": 1,
+        "gender": "Male",
+        "dateCreated": "2023-10-09",
+        "addedBy": "idmin"
+    },
+    {
+        "id": 10,
+        "id_no": "2023-0010",
+        "first_name": "JAlice",
+        "last_name": "JJohnson",
+        "course": "Software Engineering",
+        "year": 2,
+        "gender": "FeMale",
+        "dateCreated": "2023-10-10",
+        "addedBy": "jdmin"
+    },
+    {
+        "id": 11,
+        "id_no": "2023-0011",
+        "first_name": "KAlice",
+        "last_name": "KJohnson",
+        "course": "Software Engineering",
+        "year": 3,
+        "gender": "Male",
+        "dateCreated": "2023-10-11",
+        "addedBy": "kdmin"
+    },
+    {
+        "id": 12,
+        "id_no": "2023-0012",
+        "first_name": "LAlice",
+        "last_name": "LJohnson",
+        "course": "Software Engineering",
+        "year": 4,
+        "gender": "FeMale",
+        "dateCreated": "2023-10-12",
+        "addedBy": "ldmin"
     }
+
 ]

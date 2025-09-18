@@ -14,15 +14,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export type Programs = {
-  code: string
-  name: string
-  college: string
+export type Students = {
+  id_no: string
+  first_name: string
+  last_name: string
+  course: string
+  year: number
+  gender: string
   dateCreated: string
   addedBy: string
 }
 
-export const columns: ColumnDef<Programs>[] = [
+export const columns: ColumnDef<Students>[] = [
     {
     id: "select",
     header: ({ table }) => (
@@ -44,42 +47,84 @@ export const columns: ColumnDef<Programs>[] = [
     ),
   },
   {
-    accessorKey: "code",
+    accessorKey: "id_no",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Code
+          ID Number
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
   },
   {
-    accessorKey: "name",
+    accessorKey: "first_name",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Name
+          First Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
   },
   {
-    accessorKey: "college",
+    accessorKey: "last_name",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          College
+          Last Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "course",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Course
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "year",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Year
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "gender",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Gender
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
@@ -118,7 +163,7 @@ export const columns: ColumnDef<Programs>[] = [
     header: "Actions",
     id: "actions",
     cell: ({ row }) => {
-      const program = row.original
+      const student = row.original
  
       return (
         <DropdownMenu>
@@ -131,12 +176,12 @@ export const columns: ColumnDef<Programs>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(program.code)}
+              onClick={() => navigator.clipboard.writeText(student.id_no)}
             >
-              Copy program code
+              Copy student ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Edit program</DropdownMenuItem>
+            <DropdownMenuItem>Edit student</DropdownMenuItem>
             <DropdownMenuItem>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

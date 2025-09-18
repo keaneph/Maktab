@@ -25,6 +25,7 @@ export default function ProgramsPage() {
             searchPlaceholder="Search programs..."
             addTitle="Add Program"
             addDescription="Add a new program to the list."
+            searchKeys={["code", "name", "college", "dateCreated", "addedBy"]}
             renderAddForm={
               <>
                 <div className="grid gap-3">

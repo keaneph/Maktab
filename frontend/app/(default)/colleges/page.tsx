@@ -25,6 +25,7 @@ export default function CollegesPage() {
             searchPlaceholder="Search colleges..."
             addTitle="Add College"
             addDescription="Add a new college to the list."
+            searchKeys={["code", "name", "dateCreated", "addedBy"]}
             renderAddForm={
               <>
                 <div className="grid gap-3">
