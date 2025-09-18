@@ -17,6 +17,8 @@ import {
 export type Colleges = {
   code: string
   name: string
+  dateCreated: string
+  addedBy: string
 }
 
 export const columns: ColumnDef<Colleges>[] = [
@@ -63,6 +65,34 @@ export const columns: ColumnDef<Colleges>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "dateCreated",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Date Created
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "addedBy",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Added By
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )

@@ -2,62 +2,86 @@
     {
         "id": 1,
         "code": "CS101",
-        "name": "Computer Science 101"
+        "name": "Computer Science 101",
+        "dateCreated": "2023-10-01",
+        "addedBy": "admin"
     },
     {
         "id": 2,
         "code": "CS101",
-        "name": "Computer Science 102"
+        "name": "Computer Science 102",
+        "dateCreated": "2023-10-02",
+        "addedBy": "bdmin"
     },
     {
         "id": 3,
         "code": "CS101",
-        "name": "Computer Science 103"
+        "name": "Computer Science 103",
+        "dateCreated": "2023-10-03",
+        "addedBy": "cdmin"  
     },
     {
         "id": 4,
         "code": "CS101",
-        "name": "Computer Science 104"
+        "name": "Computer Science 104",
+        "dateCreated": "2023-10-04",
+        "addedBy": "ddmin"
     },
     {
         "id": 5,
         "code": "CS101",
-        "name": "Computer Science 105"
+        "name": "Computer Science 105",
+        "dateCreated": "2023-10-05",
+        "addedBy": "edmin"
     },
     {
         "id": 6,
         "code": "CS101",
-        "name": "Computer Science 106"
+        "name": "Computer Science 106",
+        "dateCreated": "2023-10-06",
+        "addedBy": "fdmin"
     },
     {
         "id": 7,
         "code": "CS101",
-        "name": "Computer Science 107"
+        "name": "Computer Science 107",
+        "dateCreated": "2023-10-07",
+        "addedBy": "gdmin"
     },
     {
         "id": 8,
         "code": "CS101",
-        "name": "Computer Science 108"
+        "name": "Computer Science 108",
+        "dateCreated": "2023-10-08",
+        "addedBy": "hdmin"
     },
     {
         "id": 9,
         "code": "CS101",
-        "name": "Computer Science 109"
+        "name": "Computer Science 109",
+        "dateCreated": "2023-10-09",
+        "addedBy": "idmin"
     },
     {
         "id": 10,
         "code": "CS101",
-        "name": "Computer Science 110"
+        "name": "Computer Science 110",
+        "dateCreated": "2023-10-10",
+        "addedBy": "jdmin"
     },
     {
         "id": 11,
         "code": "CS101",
-        "name": "Computer Science 111"
+        "name": "Computer Science 111",
+        "dateCreated": "2023-10-11",
+        "addedBy": "kdmin"
     },
     {
         "id": 12,
         "code": "CS101",
-        "name": "Computer Science 112"
+        "name": "Computer Science 112",
+        "dateCreated": "2023-10-12",
+        "addedBy": "ldmin"
     }
 
 ]
