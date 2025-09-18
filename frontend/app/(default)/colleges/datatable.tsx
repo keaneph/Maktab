@@ -87,8 +87,10 @@ export function DataTable<TData, TValue>({
       const search = filterValue.toLowerCase()
       const code = (row.getValue("code") as string)?.toLowerCase() ?? ""
       const name = (row.getValue("name") as string)?.toLowerCase() ?? ""
+      const dateCreated = (row.getValue("dateCreated") as string)?.toLowerCase() ?? ""
+      const addedBy = (row.getValue("addedBy") as string)?.toLowerCase() ?? ""
 
-      return code.includes(search) || name.includes(search)
+      return code.includes(search) || name.includes(search) || dateCreated.includes(search) || addedBy.includes(search)
   },
   })
 
