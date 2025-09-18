@@ -1,7 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { columns } from "./columns";
 import { DataTable } from "@/components/data-table";
-import collegeData from "./college-data.json";
+import collegeData from "@/app/(default)/colleges/college-data.json";
 import programData from "@/app/(default)/programs/program-data.json";
 import studentData from "@/app/(default)/students/student-data.json";
 import { SectionCards } from "@/components/section-cards";

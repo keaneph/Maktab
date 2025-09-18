@@ -46,7 +46,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -94,8 +93,9 @@ export function DataTable<TData, TValue>({
       const name = (row.getValue("name") as string)?.toLowerCase() ?? "";
       const dateCreated = (row.getValue("dateCreated") as string)?.toLowerCase() ?? "";
       const addedBy = (row.getValue("addedBy") as string)?.toLowerCase() ?? "";
+      const college = (row.getValue("college") as string)?.toLowerCase() ?? "";
 
-      return code.includes(search) || name.includes(search) || dateCreated.includes(search) || addedBy.includes(search);
+      return code.includes(search) || name.includes(search) || dateCreated.includes(search) || addedBy.includes(search) || college.includes(search);
     },
   });
 
@@ -150,7 +150,7 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="text-center">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -167,6 +167,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  className="text-center"
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
