@@ -2,6 +2,7 @@ import { SiteHeader } from "@/components/site-header";
 import collegeData from "@/app/(default)/colleges/college-data.json";
 import programData from "@/app/(default)/programs/program-data.json";
 import studentData from "@/app/(default)/students/student-data.json";
+import userData from "@/app/(default)/miscellaneous/user-data.json";
 import { SectionCards } from "@/components/section-cards";
 import { ChartAreaInteractive } from "@/components/interactive-chart";
 
@@ -14,6 +15,7 @@ export default function DashboardPage() {
           collegeCount={collegeData.length}
           programCount={programData.length}
           studentCount={studentData.length}
+          userCount={userData.length}
         />
         <div className="px-4 lg:px-6">
           <ChartAreaInteractive />

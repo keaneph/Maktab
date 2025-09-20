@@ -16,12 +16,14 @@ export function SectionCards({
   collegeCount,
   programCount,
   studentCount,
+  userCount,
   active
 }: { 
   collegeCount: number,
   programCount: number,
   studentCount: number,
-  active?: "college" | "program" | "student" | "site"
+  userCount: number,
+  active?: "college" | "program" | "student" | "miscellaneous"
 }) {
   const activeClasses = "!shadow-xs !bg-gradient-to-br !from-primary/5 !to-primary/20"
 
@@ -94,11 +96,11 @@ export function SectionCards({
           <div className="text-muted-foreground">Overall college count increase is 9</div>
         </CardFooter>
       </Card>
-      <Card className={`@container/card ${active === "site" ? activeClasses : ""}`}>
+      <Card className={`@container/card ${active === "miscellaneous" ? activeClasses : ""}`}>
         <CardHeader>
           <CardDescription>Total Site Visits</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            0
+            {userCount}
           </CardTitle>
           <CardAction>
             <Link href="/miscellaneous">

@@ -4,6 +4,7 @@ import { DataTable } from "@/components/data-table";
 import collegeData from "@/app/(default)/colleges/college-data.json";
 import programData from "@/app/(default)/programs/program-data.json";
 import studentData from "@/app/(default)/students/student-data.json";
+import userData from "@/app/(default)/miscellaneous/user-data.json";
 import { SectionCards } from "@/components/section-cards";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ export default function CollegesPage() {
           collegeCount={collegeData.length}
           programCount={programData.length}
           studentCount={studentData.length}
+          userCount={userData.length}
           active="college"
         />
         <div className="px-4 lg:px-6">
