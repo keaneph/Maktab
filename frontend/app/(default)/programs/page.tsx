@@ -17,6 +17,7 @@ export default function ProgramsPage() {
           collegeCount={collegeData.length}
           programCount={programData.length}
           studentCount={studentData.length}
+          active="program"
         />
         <div className="px-4 lg:px-6">
           <DataTable

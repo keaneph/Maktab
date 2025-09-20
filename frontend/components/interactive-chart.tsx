@@ -4,7 +4,6 @@ import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import chartData from "@/public/data/chart-data.json"
 
-import { useIsMobile } from "@/hooks/use-mobile"
 import {
   Card,
   CardContent,

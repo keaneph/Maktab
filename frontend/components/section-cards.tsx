@@ -16,14 +16,18 @@ export function SectionCards({
   collegeCount,
   programCount,
   studentCount,
+  active
 }: { 
   collegeCount: number,
   programCount: number,
   studentCount: number,
+  active?: "college" | "program" | "student" | "site"
 }) {
+  const activeClasses = "!shadow-xs !bg-gradient-to-br !from-primary/5 !to-primary/20"
+
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      <Card className="@container/card">
+      <Card className={`@container/card ${active === "college" ? activeClasses : ""}`}>
         <CardHeader>
           <CardDescription>Total Colleges</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -46,7 +50,7 @@ export function SectionCards({
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card">
+      <Card className={`@container/card ${active === "program" ? activeClasses : ""}`}>
         <CardHeader>
           <CardDescription>Total Programs</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -69,7 +73,7 @@ export function SectionCards({
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card">
+      <Card className={`@container/card ${active === "student" ? activeClasses : ""}`}>
         <CardHeader>
           <CardDescription>Total Students</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -90,7 +94,7 @@ export function SectionCards({
           <div className="text-muted-foreground">Overall college count increase is 9</div>
         </CardFooter>
       </Card>
-      <Card className="@container/card">
+      <Card className={`@container/card ${active === "site" ? activeClasses : ""}`}>
         <CardHeader>
           <CardDescription>Total Site Visits</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
