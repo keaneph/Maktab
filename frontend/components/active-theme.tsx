@@ -8,7 +8,7 @@ import {
   useState,
 } from "react"
 
-const DEFAULT_THEME = "amber"
+const DEFAULT_THEME = "blue"
 
 type ThemeContextType = {
   activeTheme: string
