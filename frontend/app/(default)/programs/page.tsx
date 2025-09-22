@@ -8,6 +8,13 @@ import userData from "@/app/(default)/miscellaneous/user-data.json";
 import { SectionCards } from "@/components/section-cards";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ProgramsPage() {
   return (
@@ -46,6 +53,25 @@ export default function ProgramsPage() {
                     name="program-name"
                     defaultValue=""
                   />
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="college-select">College</Label>
+                  <Select name="college">
+                    <SelectTrigger id="college-select">
+                      <SelectValue placeholder="Select a college" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {collegeData.map((college) => (
+                        <SelectItem
+                          key={college.code}
+                          value={college.code} // store college code
+                        >
+                          {college.name} {/* display name */}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </>
             }

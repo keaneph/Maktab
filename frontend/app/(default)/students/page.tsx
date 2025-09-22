@@ -8,6 +8,13 @@ import userData from "@/app/(default)/miscellaneous/user-data.json";
 import { SectionCards } from "@/components/section-cards";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function StudentsPage() {
   return (
@@ -32,20 +39,77 @@ export default function StudentsPage() {
             renderAddForm={
               <>
                 <div className="grid gap-3">
-                  <Label htmlFor="student-id-1">ID</Label>
+                  <Label htmlFor="student-idnumber">ID Number</Label>
                   <Input
-                    id="student-id-1"
-                    name="student-id"
+                    id="student-idnumber"
+                    name="student-idnumber"
                     defaultValue=""
                   />
                 </div>
+
                 <div className="grid gap-3">
-                  <Label htmlFor="student-name-1">Name</Label>
+                  <Label htmlFor="student-firstname">First Name</Label>
                   <Input
-                    id="student-name-1"
-                    name="student-name"
+                    id="student-firstname"
+                    name="student-firstname"
                     defaultValue=""
                   />
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="student-lastname">Last Name</Label>
+                  <Input
+                    id="student-lastname"
+                    name="student-lastname"
+                    defaultValue=""
+                  />
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="program-select">Course / Program</Label>
+                  <Select name="program">
+                    <SelectTrigger id="program-select">
+                      <SelectValue placeholder="Select a program" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {programData.map((program, index) => (
+                        <SelectItem
+                          key={`${program.code}-${index}`}
+                          value={program.code} // store program code
+                        >
+                          {program.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="student-year">Year</Label>
+                  <Select name="year">
+                    <SelectTrigger id="year-select">
+                      <SelectValue placeholder="Select year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="gender-select">Gender</Label>
+                  <Select name="gender">
+                    <SelectTrigger id="gender-select">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </>
             }
