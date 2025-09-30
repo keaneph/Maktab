@@ -1,10 +1,16 @@
-from flask import Flask # type: ignore
+from flask import Flask, jsonify
+from flask_cors import CORS
+from routes.colleges import colleges_bp
 
 app = Flask(__name__)
+CORS(app)  # allow next.js frontend to call
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
+@app.route("/api/home", methods=["GET"])
+def home():
+    return jsonify({"message": "Backend is working!"})
 
-if __name__ == '__main__':
-    app.run()
+# register blueprints
+app.register_blueprint(colleges_bp)
+
+if __name__ == "__main__":
+    app.run(debug=True)

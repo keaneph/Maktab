@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 flask = "*"
 python-dotenv = "*"
+flask-cors = "*"
+supabase = "*"
 
 [dev-packages]
 pytest = "*"
