@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { ActiveThemeProvider } from "@/components/active-theme"
 import { cookies } from "next/headers";
 import { cn } from "@/lib/utils";
-
-const META_THEME_COLOR = {
-  light: "#ffffff",
-  dark: "#09090b",
-};
-
 
 export const metadata: Metadata = {
   title: "Maktab",
@@ -37,8 +30,7 @@ export default async function RootLayout({
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
-            enableColorScheme
-          >
+            enableColorScheme>
             <ActiveThemeProvider initialTheme={activeThemeValue}>
               {children}
         </ActiveThemeProvider>

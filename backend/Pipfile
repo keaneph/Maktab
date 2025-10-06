@@ -7,7 +7,7 @@ name = "pypi"
 flask = "*"
 python-dotenv = "*"
 flask-cors = "*"
-supabase = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 pytest = "*"

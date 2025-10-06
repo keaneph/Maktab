@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ChevronLeft,
   ChevronRight,
@@ -44,25 +46,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  /** Placeholder text for search input */
+  /** placeholder text for search input */
   searchPlaceholder?: string;
-  /** Dialog title (e.g. "Add College") */
+  /** dialog title (e.g. "Add College") */
   addTitle?: string;
-  /** Dialog description */
+  /** dialog description */
   addDescription?: string;
-  /** Custom form fields for the dialog */
-  renderAddForm?: React.ReactNode;
-  /** Keys in row to search through */
+  /** custom form fields for the dialog */
+  renderAddForm?: (props: { 
+    onSuccess: () => void;
+    onValidityChange: (isValid: boolean) => void;
+  }) => React.ReactNode;
+  /** keys in row to search through */
   searchKeys?: string[];
+  // omissible function to handle form submission
+  onAdd?: (formData: TFormData) => void;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData, TValue, TFormData = Partial<TData>>({
   columns,
   data,
   searchPlaceholder = "Search...",
@@ -70,10 +75,13 @@ export function DataTable<TData, TValue>({
   addDescription = "Add a new item to the list.",
   renderAddForm,
   searchKeys = [],
-}: DataTableProps<TData, TValue>) {
+  onAdd,
+}: DataTableProps<TData, TValue, TFormData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [rowSelection, setRowSelection] = React.useState({});
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isFormValid, setIsFormValid] = React.useState(false);
 
   const table = useReactTable({
     data,
@@ -115,32 +123,39 @@ export function DataTable<TData, TValue>({
           </span>
         </div>
         <div className="flex items-center py-4">
-          <Dialog>
-            <form>
-              <DialogTrigger asChild>
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear">
-                  <Plus />
-                  <span>{addTitle}</span>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}> 
+            <DialogTrigger asChild>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear">
+                <Plus />
+                <span>{addTitle}</span>
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{addTitle}</DialogTitle>
+                <DialogDescription>{addDescription}</DialogDescription>
+              </DialogHeader>
+
+              {renderAddForm?.({ 
+                  onSuccess: () => setIsDialogOpen(false),
+                  onValidityChange: setIsFormValid,
+                })}
+
+              <DialogFooter className="flex justify-end">
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button 
+                  type="submit" 
+                  form="college-form"
+                  disabled={!isFormValid}
+                  className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : ""}
+                >
+                  Save changes
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>{addTitle}</DialogTitle>
-                  <DialogDescription>{addDescription}</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4">
-                  {renderAddForm}
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <DialogClose asChild>
-                    <Button type="submit">Save changes</Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </form>
+              </DialogFooter>
+            </DialogContent>
           </Dialog>
         </div>
       </div>

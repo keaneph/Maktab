@@ -5,6 +5,7 @@ import collegeData from "@/app/(default)/colleges/college-data.json";
 import programData from "@/app/(default)/programs/program-data.json";
 import studentData from "@/app/(default)/students/student-data.json";
 import userData from "@/app/(default)/miscellaneous/user-data.json";
+
 import { SectionCards } from "@/components/section-cards";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
