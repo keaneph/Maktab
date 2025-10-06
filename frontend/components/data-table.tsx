@@ -65,6 +65,7 @@ interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
   searchKeys?: string[];
   // omissible function to handle form submission
   onAdd?: (formData: TFormData) => void;
+  onDelete?: (code: string) => Promise<void> | void
 }
 
 export function DataTable<TData, TValue, TFormData = Partial<TData>>({
@@ -125,7 +126,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
         <div className="flex items-center py-4">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}> 
             <DialogTrigger asChild>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear">
+              <Button className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear">
                 <Plus />
                 <span>{addTitle}</span>
               </Button>
@@ -144,13 +145,13 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
 
               <DialogFooter className="flex justify-end">
                 <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="outline" className="cursor-pointer">Cancel</Button>
                 </DialogClose>
                 <Button 
                   type="submit" 
                   form="college-form"
                   disabled={!isFormValid}
-                  className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : ""}
+                  className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
                 >
                   Save changes
                 </Button>

@@ -55,6 +55,25 @@ export default function CollegesPage() {
     }
   }
 
+  // handler for deleting a college
+  async function handleDelete(code: string) {
+    try {
+      const res = await fetch(`http://127.0.0.1:8080/api/colleges/${code}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) throw new Error("Failed to delete college")
+
+      // remove from state
+      setCollegeData((prev) => prev.filter((c) => c.code !== code))
+
+      toast.success("College deleted successfully!")
+    } catch (err) {
+      console.error("Error deleting college:", err)
+      toast.error("Failed to delete college.")
+    }
+  }
+
   return (
     <>
       <SiteHeader title="Colleges"/>
@@ -71,7 +90,7 @@ export default function CollegesPage() {
           another type, in this case just code and name, so that means i can just add code
           and name without adding dateCreated and addedBy */}
           <DataTable<Colleges, unknown, Pick<Colleges, "code" | "name">>
-            columns={columns}
+            columns={columns(handleDelete)}
             data={collegeData}
             searchPlaceholder="Search colleges..."
             addTitle="Add College"
@@ -84,7 +103,7 @@ export default function CollegesPage() {
                 onSuccess={onSuccess}
                 onValidityChange={onValidityChange}/>
             )}
-          />
+          />        
         </div>
       </div>
     </>
