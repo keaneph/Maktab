@@ -41,11 +41,13 @@ export function CollegeForm({
   existingCodes = [],
   onSuccess,
   onValidityChange,
+  defaultValues = { code: "", name: "" },
 }: {  
   onSubmit: (values: CollegeFormValues) => Promise<void>
   existingCodes?: string[]
   onSuccess?: () => void
-  onValidityChange?: (isValid: boolean) => void 
+  onValidityChange?: (isValid: boolean) => void
+  defaultValues?: { code: string; name: string }
 }) {
   // extend (copies) the collegeSchema to add a custom validation
   const schemaWithDuplicateCheck = collegeSchema.extend({
@@ -53,7 +55,8 @@ export function CollegeForm({
     // shape means i can pick any field, and code means im picking the code field
     code: collegeSchema.shape.code.refine(
       // checks if value is NOT in existingCodes (case insensitive)
-      (val) => !existingCodes.includes(val.toUpperCase()),
+      // OR if it's the same as the current default value (for edit mode)
+      (val) => !existingCodes.includes(val.toUpperCase()) || val.toUpperCase() === defaultValues.code.toUpperCase(),
       { message: "This college code already exists" }
       // transform makes sure that the code is always stored in uppercase
     ).transform((val) => val.toUpperCase()),
@@ -67,9 +70,8 @@ export function CollegeForm({
     // notice i didnt use collegeSchema, but schemaWithDuplicateCheck
     // because i want to include the duplicate check validation
     resolver: zodResolver(schemaWithDuplicateCheck),
-    // replaced with empty, but has placeholder values. see placeholder
-    // values below
-    defaultValues: { code: "", name: "" },
+    // use provided defaultValues or empty strings
+    defaultValues: defaultValues,
     // mode onChange means validation only happens when the user types
     // other modes are onBlur (when user leaves the field) and onSubmit (only when user submits)
     mode: "onChange",
@@ -95,7 +97,6 @@ export function CollegeForm({
   async function handleSubmit(values: CollegeFormValues) {
     try {
         await onSubmit(values)
-        toast.success("College added successfully!")
         form.reset()
         onSuccess?.()
     } catch {

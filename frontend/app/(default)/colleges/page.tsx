@@ -49,9 +49,41 @@ export default function CollegesPage() {
       // update state immediately
       // setCollegeData takes the previous state (prev) and adds the new college to it
       setCollegeData((prev) => [...prev, newCollege])
+      
+      toast.success("College added successfully!")
     } catch (err) {
       console.error("Error adding college:", err)
+      toast.error("Failed to add college.")
       throw err
+    }
+  }
+
+  // handler for editing a college
+  async function handleEdit(oldCode: string, data: { code: string; name: string }) {
+    try {
+      const res = await fetch(`http://127.0.0.1:8080/api/colleges/${oldCode}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          dateCreated: new Date().toISOString(),
+          addedBy: "admin", // NOTE: replace with logged-in user later
+        }),
+      })
+
+      if (!res.ok) throw new Error("Failed to update college")
+
+      const updatedCollege = await res.json()
+
+      // update state with the updated college
+      setCollegeData((prev) =>
+        prev.map((c) => (c.code === oldCode ? updatedCollege : c))
+      )
+
+      toast.success("College updated successfully!")
+    } catch (err) {
+      console.error("Error updating college:", err)
+      toast.error("Failed to update college.")
     }
   }
 
@@ -90,7 +122,7 @@ export default function CollegesPage() {
           another type, in this case just code and name, so that means i can just add code
           and name without adding dateCreated and addedBy */}
           <DataTable<Colleges, unknown, Pick<Colleges, "code" | "name">>
-            columns={columns(handleDelete)}
+            columns={columns(handleDelete, handleEdit, collegeData.map(c => c.code.toUpperCase()))}
             data={collegeData}
             searchPlaceholder="Search colleges..."
             addTitle="Add College"

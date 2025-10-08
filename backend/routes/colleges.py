@@ -56,8 +56,8 @@ def update_college(code):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "UPDATE colleges SET name = %s, dateCreated = %s, addedBy = %s WHERE code = %s RETURNING *;",
-        (data["name"], data["dateCreated"], data["addedBy"], code),
+        "UPDATE colleges SET code = %s, name = %s, dateCreated = %s, addedBy = %s WHERE code = %s RETURNING *;",
+        (data["code"], data["name"], data["dateCreated"], data["addedBy"], code),
     )
     updated = cur.fetchone()
     conn.commit()

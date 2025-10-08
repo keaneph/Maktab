@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { CollegeForm } from "@/components/college-form"
 
 // type definition
 export type Colleges = {
@@ -72,15 +73,81 @@ function DeleteDialog({
   )
 }
 
+// local component for editing college
+function EditDialog({
+  open,
+  onClose,
+  onConfirm,
+  college,
+  existingCodes = [],
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: (data: { code: string; name: string }) => void
+  college: Colleges
+  existingCodes?: string[]
+}) {
+  const [isFormValid, setIsFormValid] = React.useState(false)
+
+  async function handleSubmit(values: { code: string; name: string }) {
+    try {
+      await onConfirm(values)
+      onClose()
+    } catch {
+      // Error handling is done in the parent component
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit College</DialogTitle>
+          <DialogDescription>
+            Update the college information.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <CollegeForm
+          onSubmit={handleSubmit}
+          existingCodes={existingCodes}
+          onSuccess={onClose}
+          onValidityChange={setIsFormValid}
+          defaultValues={{ code: college.code, name: college.name }}
+        />
+        
+        <DialogFooter className="flex justify-end gap-2">
+          <DialogClose asChild>
+            <Button variant="outline" className="cursor-pointer">Cancel</Button>
+          </DialogClose>
+          <Button
+            type="submit"
+            form="college-form"
+            disabled={!isFormValid}
+            className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
+          >
+            Save Changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // component for rendering dropdown + dialog safely with useState
 function ActionsCell({
   college,
   onDelete,
+  onEdit,
+  existingCodes = [],
 }: {
   college: Colleges
   onDelete?: (code: string) => void
+  onEdit?: (code: string, data: { code: string; name: string }) => void
+  existingCodes?: string[]
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
+  const [isEditOpen, setIsEditOpen] = React.useState(false)
 
   return (
     <>
@@ -99,12 +166,25 @@ function ActionsCell({
             Copy college code
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Edit college</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+            Edit college
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <EditDialog
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        college={college}
+        existingCodes={existingCodes}
+        onConfirm={(data) => {
+          onEdit?.(college.code, data)
+          setIsEditOpen(false)
+        }}
+      />
 
       <DeleteDialog
         open={isDeleteOpen}
@@ -118,7 +198,9 @@ function ActionsCell({
 
 // main column definition
 export const columns = (
-  onDelete?: (code: string) => void
+  onDelete?: (code: string) => void,
+  onEdit?: (code: string, data: { code: string; name: string }) => void,
+  existingCodes?: string[]
 ): ColumnDef<Colleges>[] => [
   {
     id: "select",
@@ -196,7 +278,12 @@ export const columns = (
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
-      <ActionsCell college={row.original} onDelete={onDelete} />
+      <ActionsCell 
+        college={row.original} 
+        onDelete={onDelete} 
+        onEdit={onEdit} 
+        existingCodes={existingCodes}
+      />
     ),
   },
 ]

@@ -76,7 +76,6 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
   addDescription = "Add a new item to the list.",
   renderAddForm,
   searchKeys = [],
-  onAdd,
 }: DataTableProps<TData, TValue, TFormData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState("");
