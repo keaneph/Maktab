@@ -61,6 +61,8 @@ interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
     onSuccess: () => void;
     onValidityChange: (isValid: boolean) => void;
   }) => React.ReactNode;
+  /** id of the form element inside add dialog; used by submit button */
+  addFormId?: string;
   /** keys in row to search through */
   searchKeys?: string[];
   // omissible function to handle form submission
@@ -75,6 +77,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
   addTitle = "Add Item",
   addDescription = "Add a new item to the list.",
   renderAddForm,
+  addFormId = "college-form",
   searchKeys = [],
 }: DataTableProps<TData, TValue, TFormData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -148,7 +151,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
                 </DialogClose>
                 <Button 
                   type="submit" 
-                  form="college-form"
+                  form={addFormId}
                   disabled={!isFormValid}
                   className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
                 >

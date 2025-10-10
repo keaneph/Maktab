@@ -96,9 +96,9 @@ export function CollegeForm({
 
   async function handleSubmit(values: CollegeFormValues) {
     try {
-        await onSubmit(values)
-        form.reset()
-        onSuccess?.()
+      await onSubmit(values)
+      form.reset()
+      onSuccess?.()
     } catch {
       toast.error("Failed to add college")
     }

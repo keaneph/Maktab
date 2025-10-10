@@ -1,21 +1,82 @@
-                <div className="grid gap-3">
-                  <Label htmlFor="college-select">College</Label>
-                  <Select name="college">
-                    <SelectTrigger id="college-select">
-                      <SelectValue placeholder="Select a college" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {collegeData.map((college) => (
-                        <SelectItem
-                          key={college.code}
-                          value={college.code} // store college code
-                        >
-                          {college.name} {/* display name */}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )
-            }
+import { defineStore } from 'pinia'
+import axios from 'axios'
+
+export const useCollegesStore = defineStore('colleges', {
+  state: () => ({
+    colleges: [],
+    loading: false
+  }),
+  actions: {
+    async fetchColleges() {
+      if (this.colleges.length > 0) return
+      this.loading = true
+      try {
+        const res = await axios.get('http://127.0.0.1:5000/colleges/')
+        this.colleges = res.data
+      } finally {
+        this.loading = false
+      }
+    },
+    async refreshColleges() {
+      this.loading = true
+      try {
+        const res = await axios.get('http://127.0.0.1:5000/colleges/')
+        this.colleges = res.data
+      } finally {
+        this.loading = false
+      }
+    },
+    async createCollege(collegeData) {
+      this.loading = true
+      try {
+        const res = await axios.post('http://127.0.0.1:5000/colleges/', collegeData)
+        if (res.status === 201) {
+          this.colleges.push(res.data.college)
+          return res.data
+        } else {
+          throw new Error('Failed to add college')
+        }
+      } catch (error) {
+        if (error.response) throw new Error(error.response.data.error || 'Failed to add college')
+        else throw error
+      } finally {
+        this.loading = false
+      }
+    },
+    async updateCollege(originalCode, collegeData) {
+      this.loading = true
+      try {
+        const res = await axios.put(`http://127.0.0.1:5000/colleges/${originalCode}`, collegeData)
+        if (res.status === 200) {
+          const idx = this.colleges.findIndex(c => c.college_code === originalCode)
+          if (idx !== -1) this.colleges[idx] = res.data.college
+          return res.data
+        } else {
+          throw new Error('Failed to update college')
+        }
+      } catch (error) {
+        if (error.response) throw new Error(error.response.data.error || 'Failed to update college')
+        else throw error
+      } finally {
+        this.loading = false
+      }
+    },
+    async deleteCollege(collegeCode) {
+      this.loading = true
+      try {
+        const res = await axios.delete(`http://127.0.0.1:5000/colleges/${collegeCode}`)
+        if (res.status === 200) {
+          this.colleges = this.colleges.filter(c => c.college_code !== collegeCode)
+          return res.data
+        } else {
+          throw new Error('Failed to delete college')
+        }
+      } catch (error) {
+        if (error.response) throw new Error(error.response.data.error || 'Failed to delete college')
+        else throw error
+      } finally {
+        this.loading = false
+      }
+    }
+  }
+})

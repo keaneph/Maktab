@@ -4,6 +4,16 @@ import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import * as React from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 import {
   DropdownMenu,
@@ -13,16 +23,191 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ProgramForm } from "@/components/program-form"
 
 export type Programs = {
   code: string
   name: string
-  college: string
+  college_code: string
   dateCreated: string
   addedBy: string
 }
 
-export const columns: ColumnDef<Programs>[] = [
+function DeleteDialog({
+  open,
+  onClose,
+  onConfirm,
+  programName,
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  programName: string
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Delete Program</DialogTitle>
+          <DialogDescription>Are you sure you want to delete <b>{programName}</b>? This action cannot be undone.</DialogDescription>
+        </DialogHeader>
+        
+        <DialogFooter className="flex justify-end gap-2">
+          <DialogClose asChild>
+            <Button variant="outline" className="cursor-pointer" onClick={onClose}>Cancel</Button>
+          </DialogClose>
+          <Button
+            variant="destructive"
+            className="cursor-pointer"
+            onClick={() => {
+              onConfirm()
+              onClose()
+            }}
+          >
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// local component for editing program
+function EditDialog({
+  open,
+  onClose,
+  onConfirm,
+  program,
+  colleges,
+  existingCodes = [],
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: (data: { code: string; name: string; college_code: string }) => void
+  program: Programs
+  colleges: Array<{ code: string; name: string }>
+  existingCodes?: string[]
+}) {
+  const [isFormValid, setIsFormValid] = React.useState(false)
+
+  async function handleSubmit(values: { code: string; name: string; college_code: string }) {
+    try {
+      await onConfirm(values)
+      onClose()
+    } catch {
+      // Error handling is done in the parent component
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Program</DialogTitle>
+          <DialogDescription>
+            Update the program information.
+          </DialogDescription>
+        </DialogHeader>
+
+        <ProgramForm
+          onSubmit={handleSubmit}
+          existingCodes={existingCodes}
+          colleges={colleges}
+          onSuccess={onClose}
+          onValidityChange={setIsFormValid}
+          defaultValues={{
+            code: program.code,
+            name: program.name,
+            college_code: program.college_code,
+          }}
+        />
+
+        <DialogFooter className="flex justify-end gap-2">
+          <DialogClose asChild>
+            <Button variant="outline" className="cursor-pointer">Cancel</Button>
+          </DialogClose>
+          <Button
+            type="submit"
+            form="program-form"
+            disabled={!isFormValid}
+            className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
+          >
+            Save Changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function ActionsCell({
+  program,
+  onDelete,
+  onEdit,
+  colleges,
+  existingCodes = [],
+}: {
+  program: Programs
+  onDelete?: (code: string) => void
+  onEdit?: (oldCode: string, data: { code: string; name: string; college_code: string }) => void
+  colleges: Array<{ code: string; name: string }>
+  existingCodes?: string[]
+}) {
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
+  const [isEditOpen, setIsEditOpen] = React.useState(false)
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => navigator.clipboard.writeText(program.code)}
+          >
+            Copy program code
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+            Edit program
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <EditDialog
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        program={program}
+        colleges={colleges}
+        existingCodes={existingCodes}
+        onConfirm={(data) => {
+          onEdit?.(program.code, data)
+          setIsEditOpen(false)
+        }}
+      />
+      <DeleteDialog
+        open={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        programName={program.name}
+        onConfirm={() => onDelete?.(program.code)}
+      />
+    </>
+  )
+}
+
+export const columns = (
+  onDelete?: (code: string) => void,
+  onEdit?: (oldCode: string, data: { code: string; name: string; college_code: string }) => void,
+  colleges: Array<{ code: string; name: string }> = [],
+  existingCodes: string[] = [],
+): ColumnDef<Programs>[] => [
     {
     id: "select",
     header: ({ table }) => (
@@ -72,14 +257,14 @@ export const columns: ColumnDef<Programs>[] = [
     },
   },
   {
-    accessorKey: "college",
+    accessorKey: "college_code",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          College
+          College Code
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
@@ -114,33 +299,15 @@ export const columns: ColumnDef<Programs>[] = [
     },
   },
   {
-    accessorKey: "actions",
-    header: "Actions",
     id: "actions",
-    cell: ({ row }) => {
-      const program = row.original
- 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(program.code)}
-            >
-              Copy program code
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Edit program</DropdownMenuItem>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    header: "Actions",
+    cell: ({ row }) => (
+      <ActionsCell 
+        program={row.original} 
+        onDelete={onDelete} 
+        onEdit={onEdit} 
+        colleges={colleges} 
+        existingCodes={existingCodes} />
+    ),
   },
 ]

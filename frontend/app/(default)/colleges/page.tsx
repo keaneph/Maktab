@@ -97,8 +97,8 @@ export default function CollegesPage() {
       if (!res.ok) throw new Error("Failed to delete college")
 
       // remove from state
-      setCollegeData((prev) => prev.filter((c) => c.code !== code))
-
+      setCollegeData((prev) => 
+        prev.filter((c) => c.code !== code))
       toast.success("College deleted successfully!")
     } catch (err) {
       console.error("Error deleting college:", err)
@@ -122,7 +122,10 @@ export default function CollegesPage() {
           another type, in this case just code and name, so that means i can just add code
           and name without adding dateCreated and addedBy */}
           <DataTable<Colleges, unknown, Pick<Colleges, "code" | "name">>
-            columns={columns(handleDelete, handleEdit, collegeData.map(c => c.code.toUpperCase()))}
+            columns={columns(
+              handleDelete, 
+              handleEdit, 
+              collegeData.map(c => c.code.toUpperCase()))}
             data={collegeData}
             searchPlaceholder="Search colleges..."
             addTitle="Add College"
