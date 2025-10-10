@@ -2,9 +2,13 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from routes.colleges import colleges_bp
 from routes.programs import programs_bp
+from db import init_pool, close_all
 
 app = Flask(__name__)
 CORS(app)  # allow next.js frontend to call
+
+# initialize a global database connection pool
+init_pool(minconn=1, maxconn=10)
 
 @app.route("/api/home", methods=["GET"])
 def home():
