@@ -4,8 +4,8 @@ import * as React from "react"
 import useSWR, { mutate as globalMutate } from "swr"
 import { SiteHeader } from "@/components/site-header"
 import { Colleges, columns } from "./columns"
+import { Programs } from "../programs/columns"
 import { DataTable } from "@/components/data-table"
-import programData from "@/app/(default)/programs/program-data.json"
 import studentData from "@/app/(default)/students/student-data.json"
 import userData from "@/app/(default)/miscellaneous/user-data.json"
 import { SectionCards } from "@/components/section-cards"
@@ -14,9 +14,13 @@ import { toast } from "sonner"
 
 export default function CollegesPage() {
   const { data: collegeData = [], error } = useSWR<Colleges[], Error>("http://127.0.0.1:8080/api/colleges/")
+  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://127.0.0.1:8080/api/programs/")
   React.useEffect(() => {
     if (error) toast.error(`Error fetching colleges: ${error.message}`)
   }, [error])
+  React.useEffect(() => {
+    if (programsErr) toast.error(`Error fetching programs: ${programsErr.message}`)
+  }, [programsErr])
 
   // handler for adding a college
   // this makes sure that when i call this function, it passes the right values
