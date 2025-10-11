@@ -82,9 +82,9 @@ export function ProgramForm({
 
   async function handleSubmit(values: ProgramFormValues) {
     try {
+      onSuccess?.()
       await onSubmit(values)
       form.reset()
-      onSuccess?.()
     } catch {
       toast.error("Failed to add program")
     }

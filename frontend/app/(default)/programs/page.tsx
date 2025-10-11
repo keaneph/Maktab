@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import useSWR, { mutate as globalMutate } from "swr"
 import { SiteHeader } from "@/components/site-header";
 import { Programs, columns } from "./columns";
 import { DataTable } from "@/components/data-table";
@@ -14,86 +15,68 @@ import { ProgramForm } from "@/components/program-form";
 import { toast } from "sonner"
 
 export default function ProgramsPage() {
-  const [collegeDataState, setCollegeData] = React.useState<typeof collegeData>([]);
-  const [programData, setProgramData] = React.useState<Programs[]>([])
+  const { data: collegeDataState = [], error: collegesErr } = useSWR<typeof collegeData, Error>("http://127.0.0.1:8080/api/colleges/")
+  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://127.0.0.1:8080/api/programs/")
   React.useEffect(() => {
-    fetch("http://127.0.0.1:8080/api/colleges/")
-      .then((res) => res.json())
-      .then((json) => {
-        setCollegeData(json)
-      })
-      .catch((err) => {
-        toast.error(`Error fetching colleges: ${err.message}`)
-      })
-  }, [])
+    if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
+  }, [collegesErr])
   React.useEffect(() => {
-    fetch("http://127.0.0.1:8080/api/programs/")
-      .then((res) => res.json())
-      .then((json) => {
-        setProgramData(json)
-      })
-      .catch((err) =>
-        toast.error(`Error fetching programs: ${err.message}`)
-      )
-  }, [])
+    if (programsErr) toast.error(`Error fetching programs: ${programsErr.message}`)
+  }, [programsErr])
 
   async function handleAdd(values: { code: string; name: string; college_code: string }) {
-    try {
-      const res = await fetch("http://127.0.0.1:8080/api/programs/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          dateCreated: new Date().toISOString(),
-          addedBy: "admin",
-        }),
-      })
-      const newProgram = await res.json()
-      setProgramData((prev) => [...prev, newProgram])
-      toast.success("Program added successfully!")
-    } catch (err) {
-      console.error("Error adding program:", err)
-      toast.error("Failed to add program.")
-      throw err
-    }
+    const newItem = { ...values, dateCreated: new Date().toISOString(), addedBy: "admin" }
+    await globalMutate(
+      "http://127.0.0.1:8080/api/programs/",
+      async (current: Programs[] = []) => {
+        const res = await fetch("http://127.0.0.1:8080/api/programs/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newItem),
+        })
+        const created = await res.json()
+        return [...current, created]
+      },
+      { revalidate: false, optimisticData: (current?: Programs[]) => [...(current ?? []), newItem], rollbackOnError: true }
+    )
+    toast.success("Program added successfully!")
   }
 
   async function handleEdit(oldCode: string, data: { code: string; name: string; college_code: string }) {
-    try {
-      const res = await fetch(`http://127.0.0.1:8080/api/programs/${oldCode}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          dateCreated: new Date().toISOString(),
-          addedBy: "admin",
-        }),
-      })
-      if (!res.ok) throw new Error("Failed to update program")
-      const updatedProgram = await res.json()
-      setProgramData((prev) => 
-        prev.map((p) => (p.code === oldCode ? updatedProgram : p))
+    const payload = { ...data, dateCreated: new Date().toISOString(), addedBy: "admin" }
+    await globalMutate(
+      "http://127.0.0.1:8080/api/programs/",
+      async (current: Programs[] = []) => {
+        const res = await fetch(`http://127.0.0.1:8080/api/programs/${oldCode}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error("Failed to update program")
+        const updated = await res.json()
+        return current.map((p: Programs) => (p.code === oldCode ? updated : p))
+      },
+      {
+        revalidate: false,
+        optimisticData: (current?: Programs[]) => (current ?? []).map((p: Programs) => (p.code === oldCode ? { ...p, ...payload } as Programs : p)),
+        rollbackOnError: true,
+      }
     )
-      toast.success("Program updated successfully!")
-    } catch (err) {
-      console.error("Error updating program:", err)
-      toast.error("Failed to update program.")
-    }
+    toast.success("Program updated successfully!")
   }
 
   async function handleDelete(code: string) {
-    try {
-      const res = await fetch(`http://127.0.0.1:8080/api/programs/${code}`, { 
-        method: "DELETE", 
-      })
-      if (!res.ok) throw new Error("Failed to delete program")
-      setProgramData((prev) => 
-        prev.filter((p) => p.code !== code))
-      toast.success("Program deleted successfully!")
-    } catch (err) {
-      console.error("Error deleting program:", err)
-      toast.error("Failed to delete program.")
-    }
+    await globalMutate(
+      "http://127.0.0.1:8080/api/programs/",
+      async (current: Programs[] = []) => {
+        const res = await fetch(`http://127.0.0.1:8080/api/programs/${code}`, { method: "DELETE" })
+        if (!res.ok) throw new Error("Failed to delete program")
+        await res.json()
+        return current.filter((p: Programs) => p.code !== code)
+      },
+      { revalidate: false, optimisticData: (current?: Programs[]) => (current ?? []).filter((p: Programs) => p.code !== code), rollbackOnError: true }
+    )
+    toast.success("Program deleted successfully!")
   }
   return (
     <>
@@ -111,8 +94,8 @@ export default function ProgramsPage() {
             columns={columns(
               handleDelete,
               handleEdit,
-              collegeDataState.map((c) => ({ code: c.code, name: c.name })),
-              programData.map((p) => p.code.toUpperCase())
+              collegeDataState.map((c: typeof collegeData[number]) => ({ code: c.code, name: c.name })),
+              programData.map((p: Programs) => p.code.toUpperCase())
             )}
             data={programData}
             searchPlaceholder="Search programs..."
@@ -123,8 +106,8 @@ export default function ProgramsPage() {
             renderAddForm={({ onSuccess, onValidityChange }) => (
               <ProgramForm
                 onSubmit={handleAdd}
-                existingCodes={programData.map((p) => p.code.toUpperCase())}
-                colleges={collegeDataState.map((c) => ({ code: c.code, name: c.name }))}
+                existingCodes={programData.map((p: Programs) => p.code.toUpperCase())}
+                colleges={collegeDataState.map((c: typeof collegeData[number]) => ({ code: c.code, name: c.name }))}
                 onSuccess={onSuccess}
                 onValidityChange={onValidityChange}
               />

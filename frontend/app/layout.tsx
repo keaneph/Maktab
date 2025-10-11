@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { ActiveThemeProvider } from "@/components/active-theme"
+import { SwrProvider } from "@/components/swr-provider"
 import { cookies } from "next/headers";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +33,9 @@ export default async function RootLayout({
             disableTransitionOnChange
             enableColorScheme>
             <ActiveThemeProvider initialTheme={activeThemeValue}>
-              {children}
+              <SwrProvider>
+                {children}
+              </SwrProvider>
         </ActiveThemeProvider>
         </ThemeProvider>
       </body>
