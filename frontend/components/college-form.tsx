@@ -26,7 +26,7 @@ export const collegeSchema = z.object({
     .string()
     .min(2, { message: "College name is required" })
     .max(50, { message: "College name must be at most 50 characters" })
-    .regex(/^[A-Za-z\s]+$/, { message: "College name must contain only letters and spaces" }),
+    .regex(/^[A-Za-z\s,]+$/, { message: "College name must contain only letters and spaces" }),
 })
 
 // inferred type from the schema
@@ -96,7 +96,6 @@ export function CollegeForm({
 
   async function handleSubmit(values: CollegeFormValues) {
     try {
-      // Close the dialog immediately for instant UX
       onSuccess?.()
       await onSubmit(values)
       form.reset()
