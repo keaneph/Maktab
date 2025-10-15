@@ -32,7 +32,7 @@ export const programSchema = z.object({
     .string()
     .min(2, { message: "Program name is required" })
     .max(100, { message: "Program name must be at most 100 characters" })
-    .regex(/^[A-Za-z\s]+$/, { message: "Program name must contain only letters and spaces" }),
+    .regex(/^[A-Za-z\s,]+$/, { message: "Program name must contain only letters and spaces" }),
   college_code: z
     .string()
     .min(1, { message: "College is required" }),
