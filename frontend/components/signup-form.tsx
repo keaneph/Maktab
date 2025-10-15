@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
@@ -9,17 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { FieldError } from "@/components/ui/field"
 import { toast } from "sonner"
 import { useRouter, useSearchParams } from "next/navigation"
 import { TreePalm } from "lucide-react"
@@ -41,10 +36,46 @@ type SignupValues = z.infer<typeof schema>
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignupValues>({
+  const form = useForm<SignupValues>({
     resolver: zodResolver(schema),
     defaultValues: { username: "", email: "", password: "", confirmPassword: "" },
+    mode: "onChange",
+    criteriaMode: "all",
   })
+  const { register, handleSubmit, setError, clearErrors, formState: { errors, isSubmitting, isValid }, watch } = form
+
+  // async uniqueness check (debounced)
+  React.useEffect(() => {
+    const sub = setTimeout(async () => {
+      const username = watch("username")
+      const email = watch("email")
+      if (!username && !email) return
+      try {
+        const params = new URLSearchParams()
+        const checkUsername = !!username
+        const checkEmail = !!email
+        if (checkUsername) params.set("username", username)
+        if (checkEmail) params.set("email", email)
+        const res = await fetch(`http://localhost:8080/api/auth/check?${params}`, { credentials: "include" })
+        if (res.ok) {
+          const data = await res.json()
+         if (checkUsername) {
+            if (data.usernameTaken) {
+              setError("username", { message: "Username already in use" })
+            }
+          }
+          if (checkEmail) {
+            if (data.emailTaken) {
+              setError("email", { message: "Email already in use" })
+            }
+          }
+        }
+      } catch {
+        // ignore network errors for UX
+      }
+    }, 300)
+    return () => clearTimeout(sub)
+  }, [watch("username"), watch("email"), setError, clearErrors])
 
   async function onSubmit(values: SignupValues) {
     try {
@@ -91,49 +122,73 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="name">Username</FieldLabel>
-                <Input id="name" type="text" placeholder="admin" {...register("username")} />
-                <FieldError errors={[errors.username]} />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="nearpharelle@gmail.com"
-                  {...register("email")}
-                />
-                <FieldError errors={[errors.email]} />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="password">Password</FieldLabel>
-                <Input id="password" type="password" placeholder="********" {...register("password")} />
-                <FieldDescription>
-                  Must be at least 8 characters long.
-                </FieldDescription>
-                <FieldError errors={[errors.password]} />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="confirm-password">
-                  Confirm Password
-                </FieldLabel>
-                <Input id="confirm-password" type="password" placeholder="********" {...register("confirmPassword")} />
-                <FieldDescription>Please confirm your password.</FieldDescription>
-                <FieldError errors={[errors.confirmPassword]} />
-              </Field>
-              <FieldGroup>
-                <Field>
-                  <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Creating..." : "Create Account"}</Button>
-                  <FieldDescription className="px-6 text-center">
-                    Already have an account? <Link href="/login">Sign in</Link>
-                  </FieldDescription>
-                </Field>
-              </FieldGroup>
-            </FieldGroup>
-          </form>
+          <Form {...form}>
+            <form id="signup-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                name="username"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="admin" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="email"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="nearpharelle@gmail.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="password"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="********" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="confirmPassword"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="********" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="submit"
+                  form="signup-form"
+                  disabled={!isValid || isSubmitting}
+                  className={!isValid || isSubmitting ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
+                >
+                  {isSubmitting ? "Creating..." : "Create Account"}
+                </Button>
+                <p className="px-6 text-center text-sm text-muted-foreground">Already have an account? <Link href="/login">Sign in</Link></p>
+              </div>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>

@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { ActiveThemeProvider } from "@/components/active-theme"
 import { SwrProvider } from "@/components/swr-provider"
 import { AuthProvider } from "@/lib/auth"
+import { Toaster } from "sonner"
 import { cookies } from "next/headers";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ export default async function RootLayout({
               <SwrProvider>
                 <AuthProvider>
                   {children}
+                  <Toaster />
                 </AuthProvider>
               </SwrProvider>
         </ActiveThemeProvider>

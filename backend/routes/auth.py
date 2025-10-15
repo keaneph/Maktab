@@ -20,6 +20,31 @@ def _set_auth_cookie(resp, token: str):
     )
 
 
+@auth_bp.route("/check", methods=["GET"])
+def check_availability():
+    username = (request.args.get("username") or "").strip()
+    email = (request.args.get("email") or "").strip()
+
+    if not username and not email:
+        return jsonify({"error": "No query provided"}), 400
+
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        username_taken = False
+        email_taken = False
+        if username:
+            cur.execute("SELECT 1 FROM users WHERE username = %s;", (username,))
+            username_taken = cur.fetchone() is not None
+        if email:
+            cur.execute("SELECT 1 FROM users WHERE email = %s;", (email,))
+            email_taken = cur.fetchone() is not None
+        cur.close()
+    finally:
+        put_conn(conn)
+
+    return jsonify({"usernameTaken": username_taken, "emailTaken": email_taken}), 200
+
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
     data = request.get_json(force=True) or {}

@@ -6,7 +6,6 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { Toaster } from "sonner";
 
 export default async function DefaultLayout({
   children,
@@ -24,7 +23,6 @@ export default async function DefaultLayout({
         "--header-height": "calc(var(--spacing) * 12)",
       } as React.CSSProperties}
     >
-      <Toaster />
       <AppSidebar variant="inset" />
       <SidebarInset>
         <div className="flex flex-1 flex-col">

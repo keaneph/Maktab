@@ -42,9 +42,11 @@ export function LoginForm({
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login } = useAuth()
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginValues>({
+  const { register, handleSubmit, formState: { errors, isSubmitting, isValid } } = useForm<LoginValues>({
     resolver: zodResolver(schema),
     defaultValues: { usernameOrEmail: "", password: "" },
+    mode: "onChange",
+    criteriaMode: "all",
   })
 
   async function onSubmit(values: LoginValues) {
@@ -92,7 +94,13 @@ export function LoginForm({
                   <FieldError errors={[errors.password]} />
                 </Field>
                 <Field>
-                  <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Logging in..." : "Login"}</Button>
+                <Button
+                  type="submit"
+                  disabled={!isValid || isSubmitting}
+                  className={!isValid || isSubmitting ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
+                >
+                  {isSubmitting ? "Logging in..." : "Login"}
+                </Button>
                   <FieldDescription className="text-center">
                     Don&apos;t have an account? <Link href="/signup">Sign up</Link>
                   </FieldDescription>
