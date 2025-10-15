@@ -3,26 +3,28 @@
 import * as React from "react"
 import useSWR, { mutate as globalMutate } from "swr"
 import { SiteHeader } from "@/components/site-header";
+import { Colleges } from "../colleges/columns";
 import { Programs, columns } from "./columns";
+import { Students } from "../students/columns";
 import { DataTable } from "@/components/data-table";
-import collegeData from "@/app/(default)/colleges/college-data.json";
-import programDataJson from "@/app/(default)/programs/program-data.json";
-import studentData from "@/app/(default)/students/student-data.json";
 import userData from "@/app/(default)/miscellaneous/user-data.json";
-
 import { SectionCards } from "@/components/section-cards";
 import { ProgramForm } from "@/components/program-form";
 import { toast } from "sonner"
 
 export default function ProgramsPage() {
-  const { data: collegeDataState = [], error: collegesErr } = useSWR<typeof collegeData, Error>("http://127.0.0.1:8080/api/colleges/")
+  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://127.0.0.1:8080/api/colleges/")
   const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://127.0.0.1:8080/api/programs/")
+  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://127.0.0.1:8080/api/students/")
   React.useEffect(() => {
     if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
   }, [collegesErr])
   React.useEffect(() => {
     if (programsErr) toast.error(`Error fetching programs: ${programsErr.message}`)
   }, [programsErr])
+  React.useEffect(() => {
+    if (studentsErr) toast.error(`Error fetching students: ${studentsErr.message}`)
+  }, [studentsErr])
 
   async function handleAdd(values: { code: string; name: string; college_code: string }) {
     const newItem = { ...values, dateCreated: new Date().toISOString(), addedBy: "admin" }
@@ -83,7 +85,7 @@ export default function ProgramsPage() {
       <SiteHeader title="Programs" />
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <SectionCards
-          collegeCount={collegeDataState.length}
+          collegeCount={collegeData.length}
           programCount={programData.length}
           studentCount={studentData.length}
           userCount={userData.length}
@@ -94,7 +96,7 @@ export default function ProgramsPage() {
             columns={columns(
               handleDelete,
               handleEdit,
-              collegeDataState.map((c: typeof collegeData[number]) => ({ code: c.code, name: c.name })),
+              collegeData.map((c: Colleges) => ({ code: c.code, name: c.name })),
               programData.map((p: Programs) => p.code.toUpperCase())
             )}
             data={programData}
@@ -107,7 +109,7 @@ export default function ProgramsPage() {
               <ProgramForm
                 onSubmit={handleAdd}
                 existingCodes={programData.map((p: Programs) => p.code.toUpperCase())}
-                colleges={collegeDataState.map((c: typeof collegeData[number]) => ({ code: c.code, name: c.name }))}
+                colleges={collegeData.map((c: Colleges) => ({ code: c.code, name: c.name }))}
                 onSuccess={onSuccess}
                 onValidityChange={onValidityChange}
               />

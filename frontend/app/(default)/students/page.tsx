@@ -3,8 +3,9 @@
 import * as React from "react"
 import useSWR, { mutate as globalMutate } from "swr"
 import { SiteHeader } from "@/components/site-header"
-import { Students, columns } from "./columns"
+import { Colleges } from "../colleges/columns"
 import { Programs } from "../programs/columns"
+import { Students, columns } from "./columns"
 import { DataTable } from "@/components/data-table"
 import userData from "@/app/(default)/miscellaneous/user-data.json"
 import { SectionCards } from "@/components/section-cards"
@@ -12,8 +13,12 @@ import { StudentForm } from "@/components/student-form"
 import { toast } from "sonner"
 
 export default function StudentsPage() {
+  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://127.0.0.1:8080/api/colleges/")
   const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://127.0.0.1:8080/api/students/")
   const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://127.0.0.1:8080/api/programs/")
+  React.useEffect(() => {
+    if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
+  }, [collegesErr])
   React.useEffect(() => {
     if (studentsErr) toast.error(`Error fetching students: ${studentsErr.message}`)
   }, [studentsErr])
@@ -81,7 +86,7 @@ export default function StudentsPage() {
       <SiteHeader title="Students" />
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <SectionCards
-          collegeCount={0}
+          collegeCount={collegeData.length}
           programCount={programData.length}
           studentCount={studentData.length}
           userCount={userData.length}
