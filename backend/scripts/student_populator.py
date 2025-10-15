@@ -37,4 +37,4 @@ with open(output_file, mode="w", newline="", encoding="utf-8") as file:
         
         writer.writerow([idno, firstname, lastname, course, year, gender, datecreated, addedby])
 
-print(f"✅ Generated {num_records} records in {output_file}")
+print(f"Generated {num_records} records in {output_file}")

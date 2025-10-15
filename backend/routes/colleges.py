@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from datetime import date, datetime
 from db import get_conn, put_conn
+from auth import require_auth
 
 colleges_bp = Blueprint("colleges", __name__, url_prefix="/api/colleges")
 
@@ -29,6 +30,7 @@ def get_colleges():
 
 # POST create a new college
 @colleges_bp.route("/", methods=["POST"])
+@require_auth()
 def create_college():
     data = request.get_json()
     conn = get_conn()
@@ -36,7 +38,7 @@ def create_college():
         cur = conn.cursor()
         cur.execute(
             "INSERT INTO colleges (code, name, dateCreated, addedBy) VALUES (%s, %s, %s, %s) RETURNING *;",
-            (data["code"], data["name"], data["dateCreated"], data["addedBy"]),
+            (data["code"], data["name"], data["dateCreated"], g.current_user["username"]),
         )
         new_college = cur.fetchone()
         conn.commit()
@@ -51,6 +53,7 @@ def create_college():
 
 # PUT update a college by code
 @colleges_bp.route("/<string:code>", methods=["PUT"])
+@require_auth()
 def update_college(code):
     data = request.get_json()
     conn = get_conn()
@@ -58,7 +61,7 @@ def update_college(code):
         cur = conn.cursor()
         cur.execute(
             "UPDATE colleges SET code = %s, name = %s, dateCreated = %s, addedBy = %s WHERE code = %s RETURNING *;",
-            (data["code"], data["name"], data["dateCreated"], data["addedBy"], code),
+            (data["code"], data["name"], data["dateCreated"], g.current_user["username"], code),
         )
         updated = cur.fetchone()
         conn.commit()
@@ -73,6 +76,7 @@ def update_college(code):
 
 # DELETE a college by code
 @colleges_bp.route("/<string:code>", methods=["DELETE"])
+@require_auth()
 def delete_college(code):
     conn = get_conn()
     try:

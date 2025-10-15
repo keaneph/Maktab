@@ -13,9 +13,9 @@ import { ProgramForm } from "@/components/program-form";
 import { toast } from "sonner"
 
 export default function ProgramsPage() {
-  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://127.0.0.1:8080/api/colleges/")
-  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://127.0.0.1:8080/api/programs/")
-  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://127.0.0.1:8080/api/students/")
+  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://localhost:8080/api/colleges/")
+  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://localhost:8080/api/programs/")
+  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://localhost:8080/api/students/")
   React.useEffect(() => {
     if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
   }, [collegesErr])
@@ -27,14 +27,15 @@ export default function ProgramsPage() {
   }, [studentsErr])
 
   async function handleAdd(values: { code: string; name: string; college_code: string }) {
-    const newItem = { ...values, dateCreated: new Date().toISOString(), addedBy: "admin" }
+    const newItem: Programs = { ...values, dateCreated: new Date().toISOString(), addedBy: "(you)" }
     await globalMutate(
-      "http://127.0.0.1:8080/api/programs/",
+      "http://localhost:8080/api/programs/",
       async (current: Programs[] = []) => {
-        const res = await fetch("http://127.0.0.1:8080/api/programs/", {
+        const res = await fetch("http://localhost:8080/api/programs/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newItem),
+          credentials: "include",
+          body: JSON.stringify({ code: newItem.code, name: newItem.name, college_code: newItem.college_code, dateCreated: newItem.dateCreated }),
         })
         const created = await res.json()
         return [...current, created]
@@ -45,13 +46,14 @@ export default function ProgramsPage() {
   }
 
   async function handleEdit(oldCode: string, data: { code: string; name: string; college_code: string }) {
-    const payload = { ...data, dateCreated: new Date().toISOString(), addedBy: "admin" }
+    const payload = { ...data, dateCreated: new Date().toISOString() }
     await globalMutate(
-      "http://127.0.0.1:8080/api/programs/",
+      "http://localhost:8080/api/programs/",
       async (current: Programs[] = []) => {
-        const res = await fetch(`http://127.0.0.1:8080/api/programs/${oldCode}`, {
+        const res = await fetch(`http://localhost:8080/api/programs/${oldCode}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         })
         if (!res.ok) throw new Error("Failed to update program")
@@ -69,9 +71,9 @@ export default function ProgramsPage() {
 
   async function handleDelete(code: string) {
     await globalMutate(
-      "http://127.0.0.1:8080/api/programs/",
+      "http://localhost:8080/api/programs/",
       async (current: Programs[] = []) => {
-        const res = await fetch(`http://127.0.0.1:8080/api/programs/${code}`, { method: "DELETE" })
+        const res = await fetch(`http://localhost:8080/api/programs/${code}`, { method: "DELETE", credentials: "include" })
         if (!res.ok) throw new Error("Failed to delete program")
         await res.json()
         return current.filter((p: Programs) => p.code !== code)

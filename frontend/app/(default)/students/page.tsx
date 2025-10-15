@@ -13,9 +13,9 @@ import { StudentForm } from "@/components/student-form"
 import { toast } from "sonner"
 
 export default function StudentsPage() {
-  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://127.0.0.1:8080/api/colleges/")
-  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://127.0.0.1:8080/api/students/")
-  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://127.0.0.1:8080/api/programs/")
+  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://localhost:8080/api/colleges/")
+  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://localhost:8080/api/students/")
+  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://localhost:8080/api/programs/")
   React.useEffect(() => {
     if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
   }, [collegesErr])
@@ -27,14 +27,15 @@ export default function StudentsPage() {
   }, [programsErr])
 
   async function handleAdd(values: { idNo: string; firstName: string; lastName: string; course: string; year: string; gender: string }) {
-    const newItem = { ...values, year: parseInt(values.year), dateCreated: new Date().toISOString(), addedBy: "admin" }
+    const newItem: Students = { ...values, year: parseInt(values.year), dateCreated: new Date().toISOString(), addedBy: "(you)" }
     await globalMutate(
-      "http://127.0.0.1:8080/api/students/",
+      "http://localhost:8080/api/students/",
       async (current: Students[] = []) => {
-        const res = await fetch("http://127.0.0.1:8080/api/students/", {
+        const res = await fetch("http://localhost:8080/api/students/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newItem),
+          credentials: "include",
+          body: JSON.stringify({ ...newItem, addedBy: undefined }),
         })
         const created = await res.json()
         return [...current, created]
@@ -45,13 +46,14 @@ export default function StudentsPage() {
   }
 
   async function handleEdit(oldId: string, data: { idNo: string; firstName: string; lastName: string; course: string; year: string; gender: string }) {
-    const payload = { ...data, year: parseInt(data.year), dateCreated: new Date().toISOString(), addedBy: "admin" }
+    const payload = { ...data, year: parseInt(data.year), dateCreated: new Date().toISOString() }
     await globalMutate(
-      "http://127.0.0.1:8080/api/students/",
+      "http://localhost:8080/api/students/",
       async (current: Students[] = []) => {
-        const res = await fetch(`http://127.0.0.1:8080/api/students/${oldId}`, {
+        const res = await fetch(`http://localhost:8080/api/students/${oldId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         })
         if (!res.ok) throw new Error("Failed to update student")
@@ -69,9 +71,9 @@ export default function StudentsPage() {
 
   async function handleDelete(id_no: string) {
     await globalMutate(
-      "http://127.0.0.1:8080/api/students/",
+      "http://localhost:8080/api/students/",
       async (current: Students[] = []) => {
-        const res = await fetch(`http://127.0.0.1:8080/api/students/${id_no}`, { method: "DELETE" })
+        const res = await fetch(`http://localhost:8080/api/students/${id_no}`, { method: "DELETE", credentials: "include" })
         if (!res.ok) throw new Error("Failed to delete student")
         await res.json()
         return current.filter((s: Students) => s.idNo !== id_no)

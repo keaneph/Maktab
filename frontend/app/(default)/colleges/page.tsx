@@ -13,9 +13,9 @@ import { CollegeForm } from "@/components/college-form"
 import { toast } from "sonner"
 
 export default function CollegesPage() {
-  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://127.0.0.1:8080/api/colleges/")
-  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://127.0.0.1:8080/api/programs/")
-  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://127.0.0.1:8080/api/students/")
+  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://localhost:8080/api/colleges/")
+  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://localhost:8080/api/programs/")
+  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://localhost:8080/api/students/")
   React.useEffect(() => {
     if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
   }, [collegesErr])
@@ -29,19 +29,20 @@ export default function CollegesPage() {
   // handler for adding a college
   // this makes sure that when i call this function, it passes the right values
   async function handleAdd(values: { code: string; name: string }) {
-    const newItem = {
+    const newItem: Colleges = {
       ...values,
       dateCreated: new Date().toISOString(),
-      addedBy: "admin",
+      addedBy: "(you)",
     }
     // optimistic update
     await globalMutate(
-      "http://127.0.0.1:8080/api/colleges/",
+      "http://localhost:8080/api/colleges/",
       async (current: Colleges[] = []) => {
-        const res = await fetch("http://127.0.0.1:8080/api/colleges/", {
+        const res = await fetch("http://localhost:8080/api/colleges/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newItem),
+          credentials: "include",
+          body: JSON.stringify({ code: newItem.code, name: newItem.name, dateCreated: newItem.dateCreated }),
         })
         if (!res.ok) throw new Error("Failed to add")
         const created = await res.json()
@@ -57,14 +58,14 @@ export default function CollegesPage() {
     const payload = {
       ...data,
       dateCreated: new Date().toISOString(),
-      addedBy: "admin",
     }
     await globalMutate(
-      "http://127.0.0.1:8080/api/colleges/",
+      "http://localhost:8080/api/colleges/",
       async (current: Colleges[] = []) => {
-        const res = await fetch(`http://127.0.0.1:8080/api/colleges/${oldCode}`, {
+        const res = await fetch(`http://localhost:8080/api/colleges/${oldCode}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         })
         if (!res.ok) throw new Error("Failed to update college")
@@ -83,9 +84,9 @@ export default function CollegesPage() {
   // handler for deleting a college
   async function handleDelete(code: string) {
     await globalMutate(
-      "http://127.0.0.1:8080/api/colleges/",
+      "http://localhost:8080/api/colleges/",
       async (current: Colleges[] = []) => {
-        const res = await fetch(`http://127.0.0.1:8080/api/colleges/${code}`, { method: "DELETE" })
+        const res = await fetch(`http://localhost:8080/api/colleges/${code}`, { method: "DELETE", credentials: "include" })
         if (!res.ok) throw new Error("Failed to delete college")
         await res.json()
         return current.filter((c: Colleges) => c.code !== code)

@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { ActiveThemeProvider } from "@/components/active-theme"
 import { SwrProvider } from "@/components/swr-provider"
+import { AuthProvider } from "@/lib/auth"
 import { cookies } from "next/headers";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,9 @@ export default async function RootLayout({
             enableColorScheme>
             <ActiveThemeProvider initialTheme={activeThemeValue}>
               <SwrProvider>
-                {children}
+                <AuthProvider>
+                  {children}
+                </AuthProvider>
               </SwrProvider>
         </ActiveThemeProvider>
         </ThemeProvider>

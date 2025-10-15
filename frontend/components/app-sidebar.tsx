@@ -22,7 +22,10 @@ import {
   SidebarMenu,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
+import { NavUser } from "./nav-user"
+import { useAuth } from "@/lib/auth"
 
 const items = [
   {
@@ -54,6 +57,7 @@ const items = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const { user } = useAuth()
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -91,6 +95,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroupContent>
       </SidebarGroup>
       </SidebarContent>
-    </Sidebar>
+      <SidebarFooter>
+        <NavUser user={{
+          name: user?.username || "User",
+          email: user?.email || "",
+          avatar: "",
+        }}/>
+      </SidebarFooter>
+    </Sidebar>  
   )
 }

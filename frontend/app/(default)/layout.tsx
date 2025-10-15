@@ -1,6 +1,7 @@
 // app/(default)/layout.tsx
 import { AppSidebar } from "@/components/app-sidebar";
 import { cookies } from "next/headers";
+import { AuthGate } from "@/components/auth-gate";
 import {
   SidebarInset,
   SidebarProvider,
@@ -28,7 +29,9 @@ export default async function DefaultLayout({
       <SidebarInset>
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            {children}
+            <AuthGate>
+              {children}
+            </AuthGate>
           </div>
         </div>
       </SidebarInset>

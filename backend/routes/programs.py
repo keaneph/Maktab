@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from datetime import date, datetime
 from db import get_conn, put_conn
+from auth import require_auth
 
 programs_bp = Blueprint("programs", __name__, url_prefix="/api/programs")
 
@@ -30,6 +31,7 @@ def get_programs():
     
 # POST create a new program
 @programs_bp.route("/", methods=["POST"])
+@require_auth()
 def create_program():
     data = request.get_json()
     conn = get_conn()
@@ -37,7 +39,7 @@ def create_program():
         cur = conn.cursor()
         cur.execute(
             "INSERT INTO programs (code, name, college_code, dateCreated, addedBy) VALUES (%s, %s, %s, %s, %s) RETURNING *;",
-            (data["code"], data["name"], data["college_code"], data["dateCreated"], data["addedBy"]),
+            (data["code"], data["name"], data["college_code"], data["dateCreated"], g.current_user["username"]),
         )
         new_program = cur.fetchone()
         conn.commit()
@@ -52,6 +54,7 @@ def create_program():
 
 # PUT update a programs by code
 @programs_bp.route("/<string:code>", methods=["PUT"])
+@require_auth()
 def update_program(code):
     data = request.get_json()
     conn = get_conn()
@@ -59,7 +62,7 @@ def update_program(code):
         cur = conn.cursor()
         cur.execute(
             "UPDATE programs SET code = %s, name = %s, college_code = %s, dateCreated = %s, addedBy = %s WHERE code = %s RETURNING *;",
-            (data["code"], data["name"], data["college_code"], data["dateCreated"], data["addedBy"], code),
+            (data["code"], data["name"], data["college_code"], data["dateCreated"], g.current_user["username"], code),
         )
         updated = cur.fetchone()
         conn.commit()
@@ -74,6 +77,7 @@ def update_program(code):
 
 # DELETE a program by code
 @programs_bp.route("/<string:code>", methods=["DELETE"])
+@require_auth()
 def delete_program(code):
     conn = get_conn()
     try:

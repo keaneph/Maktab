@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from datetime import date, datetime
 from db import get_conn, put_conn
+from auth import require_auth
 
 students_bp = Blueprint("students", __name__, url_prefix="/api/students")
 
@@ -33,6 +34,7 @@ def get_students():
 
 # POST create a new student
 @students_bp.route("/", methods=["POST"])
+@require_auth()
 def create_student():
     data = request.get_json()
     conn = get_conn()
@@ -40,7 +42,7 @@ def create_student():
         cur = conn.cursor()
         cur.execute(
             "INSERT INTO students (idNo, firstName, lastName, course, year, gender, dateCreated, addedBy) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *;",
-            (data["idNo"], data["firstName"], data["lastName"], data["course"], data["year"], data["gender"], data["dateCreated"], data["addedBy"]),
+            (data["idNo"], data["firstName"], data["lastName"], data["course"], data["year"], data["gender"], data["dateCreated"], g.current_user["username"]),
         )
         new_student = cur.fetchone()
         conn.commit()
@@ -55,6 +57,7 @@ def create_student():
 
 # PUT update a student by id_no
 @students_bp.route("/<string:id_no>", methods=["PUT"])
+@require_auth()
 def update_student(id_no):
     data = request.get_json()
     conn = get_conn()
@@ -62,7 +65,7 @@ def update_student(id_no):
         cur = conn.cursor()
         cur.execute(
             "UPDATE students SET idNo = %s, firstName = %s, lastName = %s, course = %s, year = %s, gender = %s, dateCreated = %s, addedBy = %s WHERE idNo = %s RETURNING *;",
-            (data["idNo"], data["firstName"], data["lastName"], data["course"], data["year"], data["gender"], data["dateCreated"], data["addedBy"], id_no),
+            (data["idNo"], data["firstName"], data["lastName"], data["course"], data["year"], data["gender"], data["dateCreated"], g.current_user["username"], id_no),
         )
         updated = cur.fetchone()
         conn.commit()
@@ -77,6 +80,7 @@ def update_student(id_no):
 
 # DELETE a student by id_no
 @students_bp.route("/<string:id_no>", methods=["DELETE"])
+@require_auth()
 def delete_student(id_no):
     conn = get_conn()
     try:
