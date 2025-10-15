@@ -6,8 +6,8 @@ import { SiteHeader } from "@/components/site-header"
 import { Colleges, columns } from "./columns"
 import { Programs } from "../programs/columns"
 import { Students } from "../students/columns"
+import { Miscellaneous } from "../miscellaneous/columns"
 import { DataTable } from "@/components/data-table"
-import userData from "@/app/(default)/miscellaneous/user-data.json"
 import { SectionCards } from "@/components/section-cards"
 import { CollegeForm } from "@/components/college-form"
 import { toast } from "sonner"
@@ -16,6 +16,8 @@ export default function CollegesPage() {
   const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://localhost:8080/api/colleges/")
   const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://localhost:8080/api/programs/")
   const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://localhost:8080/api/students/")
+  const { data: userData = [], error: userErr } = useSWR<Miscellaneous[], Error>("http://localhost:8080/api/users/")
+  
   React.useEffect(() => {
     if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
   }, [collegesErr])
@@ -25,6 +27,9 @@ export default function CollegesPage() {
   React.useEffect(() => {
     if (studentsErr) toast.error(`Error fetching students: ${studentsErr.message}`)
   }, [studentsErr])
+  React.useEffect(() => {
+    if (userErr) toast.error(`Error fetching users: ${userErr.message}`)
+  }, [userErr])
 
   // handler for adding a college
   // this makes sure that when i call this function, it passes the right values

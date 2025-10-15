@@ -6,8 +6,8 @@ import { SiteHeader } from "@/components/site-header"
 import { Colleges } from "../colleges/columns"
 import { Programs } from "../programs/columns"
 import { Students, columns } from "./columns"
+import { Miscellaneous } from "../miscellaneous/columns"
 import { DataTable } from "@/components/data-table"
-import userData from "@/app/(default)/miscellaneous/user-data.json"
 import { SectionCards } from "@/components/section-cards"
 import { StudentForm } from "@/components/student-form"
 import { toast } from "sonner"
@@ -16,6 +16,7 @@ export default function StudentsPage() {
   const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://localhost:8080/api/colleges/")
   const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://localhost:8080/api/students/")
   const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://localhost:8080/api/programs/")
+  const { data: userData = [], error: userErr } = useSWR<Miscellaneous[], Error>("http://localhost:8080/api/users/")
   React.useEffect(() => {
     if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
   }, [collegesErr])
@@ -25,6 +26,9 @@ export default function StudentsPage() {
   React.useEffect(() => {
     if (programsErr) toast.error(`Error fetching programs: ${programsErr.message}`)
   }, [programsErr])
+  React.useEffect(() => {
+    if (userErr) toast.error(`Error fetching users: ${userErr.message}`)
+  }, [userErr])
 
   async function handleAdd(values: { idNo: string; firstName: string; lastName: string; course: string; year: string; gender: string }) {
     const newItem: Students = { ...values, year: parseInt(values.year), dateCreated: new Date().toISOString(), addedBy: "(you)" }

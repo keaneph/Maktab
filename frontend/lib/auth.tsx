@@ -86,11 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify(values),
     })
     if (!res.ok) throw new Error(await res.text())
-    const data = await res.json()
-    setUser(data)
-    setAuthenticated(true)
-    await refreshMe()
-    router.replace(next || "/dashboard")
+    // Do not sign in automatically after signup
     setAuthenticating(false)
   }
 

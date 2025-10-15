@@ -69,9 +69,8 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         throw new Error(msg)
       }
       await res.json()
-      toast.success("Account created")
-      const next = searchParams.get("next") || "/dashboard"
-      router.replace(next)
+      toast.success("Account created. Please log in.")
+      router.replace("/login")
     } catch (err: unknown) {
       toast.error((err as Error)?.message || "Signup failed")
     }

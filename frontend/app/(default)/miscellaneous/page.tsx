@@ -1,15 +1,53 @@
+"use client"
+
+import * as React from "react"
+import useSWR, { mutate as globalMutate } from "swr"
+import { toast } from "sonner"
 import { SiteHeader } from "@/components/site-header";
-import { columns } from "./columns";
+import { columns, Miscellaneous } from "./columns";
 import { DataTable } from "@/components/data-table";
-import collegeData from "@/app/(default)/colleges/college-data.json";
-import programData from "@/app/(default)/programs/program-data.json";
-import studentData from "@/app/(default)/students/student-data.json";
-import userData from "@/app/(default)/miscellaneous/user-data.json";
+import { Colleges } from "../colleges/columns"
+import { Programs } from "../programs/columns"
+import { Students } from "../students/columns"
 import { SectionCards } from "@/components/section-cards";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 
 export default function MiscellaneousPage() {
+  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://localhost:8080/api/colleges/")
+  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://localhost:8080/api/programs/")
+  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://localhost:8080/api/students/")
+  const { data: userData = [], error: userErr } = useSWR<Miscellaneous[], Error>("http://localhost:8080/api/users/")
+  
+  React.useEffect(() => {
+    if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
+  }, [collegesErr])
+  React.useEffect(() => {
+    if (programsErr) toast.error(`Error fetching programs: ${programsErr.message}`)
+  }, [programsErr])
+  React.useEffect(() => {
+    if (studentsErr) toast.error(`Error fetching students: ${studentsErr.message}`)
+  }, [studentsErr])
+  React.useEffect(() => {
+    if (userErr) toast.error(`Error fetching users: ${userErr.message}`)
+  }, [userErr])
+
+  async function handleDelete(username: string) {
+    await globalMutate(
+      "http://localhost:8080/api/users/",
+      async (current: Miscellaneous[] = []) => {
+        const res = await fetch(`http://localhost:8080/api/users/${username}`, { method: "DELETE", credentials: "include" })
+        if (!res.ok) throw new Error("Failed to delete user")
+        await res.json()
+        return current.filter((u: Miscellaneous) => u.username !== username)
+      },
+      {
+        revalidate: false,
+        optimisticData: (current?: Miscellaneous[]) => (current ?? []).filter((u: Miscellaneous) => u.username !== username),
+        rollbackOnError: true,
+      }
+    )
+    toast.success("User deleted successfully")
+  }
+
   return (
     <>
       <SiteHeader title="Miscellaneous" />
@@ -23,32 +61,12 @@ export default function MiscellaneousPage() {
         />
         <div className="px-4 lg:px-6">
           <DataTable
-            columns={columns}
+            columns={columns(handleDelete)}
             data={userData}
             searchPlaceholder="Search users..."
-            addTitle="Add User"
-            addDescription="Add a new user to the list."
-            searchKeys={["user", "email", "password", "dateLogged"]}
-            renderAddForm={
-              <>
-                <div className="grid gap-3">
-                  <Label htmlFor="user-user-1">User</Label>
-                  <Input
-                    id="user-user-1"
-                    name="user-user"
-                    defaultValue=""
-                  />
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="user-password-1">Password</Label>
-                  <Input
-                    id="user-password-1"
-                    name="user-password"
-                    defaultValue=""
-                  />
-                </div>
-              </>
-            }
+            addTitle="Users"
+            addDescription="List of users"
+            searchKeys={["username", "email", "dateLogged"]}
           />
         </div>
       </div>

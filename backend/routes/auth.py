@@ -56,14 +56,18 @@ def signup():
     finally:
         put_conn(conn)
 
-    token = generate_jwt({"username": user_row[0], "email": user_row[1]})
-    resp = make_response(jsonify({
-        "username": user_row[0],
-        "email": user_row[1],
-        "dateLogged": user_row[2],
-    }))
-    _set_auth_cookie(resp, token)
-    return resp, 201
+    # Do NOT auto-login on signup. Return success without setting cookie.
+    return (
+        jsonify(
+            {
+                "username": user_row[0],
+                "email": user_row[1],
+                "dateLogged": user_row[2],
+                "message": "Account created",
+            }
+        ),
+        201,
+    )
 
 
 @auth_bp.route("/login", methods=["POST"])
