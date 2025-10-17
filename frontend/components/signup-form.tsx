@@ -16,7 +16,7 @@ import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { TreePalm } from "lucide-react"
 
 const schema = z
@@ -35,7 +35,6 @@ type SignupValues = z.infer<typeof schema>
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const form = useForm<SignupValues>({
     resolver: zodResolver(schema),
     defaultValues: { username: "", email: "", password: "", confirmPassword: "" },

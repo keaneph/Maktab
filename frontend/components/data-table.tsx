@@ -56,6 +56,8 @@ interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
   addTitle?: string;
   /** dialog description */
   addDescription?: string;
+  /** hide the add button and dialog entirely */
+  hideAddButton?: boolean;
   /** custom form fields for the dialog */
   renderAddForm?: (props: { 
     onSuccess: () => void;
@@ -76,6 +78,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
   searchPlaceholder = "Search...",
   addTitle = "Add Item",
   addDescription = "Add a new item to the list.",
+  hideAddButton = false,
   renderAddForm,
   addFormId = "college-form",
   searchKeys = [],
@@ -126,40 +129,42 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
           </span>
         </div>
         <div className="flex items-center py-4">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}> 
-            <DialogTrigger asChild>
-              <Button className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear">
-                <Plus />
-                <span>{addTitle}</span>
-              </Button>
-            </DialogTrigger>
-
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>{addTitle}</DialogTitle>
-                <DialogDescription>{addDescription}</DialogDescription>
-              </DialogHeader>
-
-              {renderAddForm?.({ 
-                  onSuccess: () => setIsDialogOpen(false),
-                  onValidityChange: setIsFormValid,
-                })}
-
-              <DialogFooter className="flex justify-end">
-                <DialogClose asChild>
-                  <Button variant="outline" className="cursor-pointer">Cancel</Button>
-                </DialogClose>
-                <Button 
-                  type="submit" 
-                  form={addFormId}
-                  disabled={!isFormValid}
-                  className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
-                >
-                  Save changes
+          {!hideAddButton && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}> 
+              <DialogTrigger asChild>
+                <Button className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear">
+                  <Plus />
+                  <span>{addTitle}</span>
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>{addTitle}</DialogTitle>
+                  <DialogDescription>{addDescription}</DialogDescription>
+                </DialogHeader>
+
+                {renderAddForm?.({ 
+                    onSuccess: () => setIsDialogOpen(false),
+                    onValidityChange: setIsFormValid,
+                  })}
+
+                <DialogFooter className="flex justify-end">
+                  <DialogClose asChild>
+                    <Button variant="outline" className="cursor-pointer">Cancel</Button>
+                  </DialogClose>
+                  <Button 
+                    type="submit" 
+                    form={addFormId}
+                    disabled={!isFormValid}
+                    className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
+                  >
+                    Save changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
       <div className="overflow-hidden rounded-md border">

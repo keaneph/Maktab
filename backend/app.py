@@ -6,6 +6,7 @@ from routes.programs import programs_bp
 from routes.students import students_bp
 from routes.auth import auth_bp
 from routes.users import users_bp
+from routes.metrics import metrics_bp
 from db import init_pool, close_all
 
 app = Flask(__name__)
@@ -25,6 +26,7 @@ app.register_blueprint(programs_bp)
 app.register_blueprint(students_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(users_bp)
+app.register_blueprint(metrics_bp)
 
 if __name__ == "__main__":
     app.run(debug=True)

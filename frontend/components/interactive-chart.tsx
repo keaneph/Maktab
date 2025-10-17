@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import chartData from "@/public/data/chart-data.json"
+import useSWR from "swr"
+import { toast } from "sonner"
 
 import {
   Card,
@@ -30,38 +31,41 @@ const chartConfig: ChartConfig = {
   students: {
     label: "Students",
     color: "var(--primary)" 
-}
+  },
+  users: {
+    label: "Users",
+    color: "var(--primary)"
+  }
 }
 
 export function ChartAreaInteractive() {
-  // always show last 7 days only
-  const daysToSubtract = 7
+  const { data, error, isLoading } = useSWR(
+    "http://localhost:8080/api/metrics/daily",
+    (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json())
+  )
 
-  const filteredData = React.useMemo(() => {
-  const referenceDate = new Date() // today
-  const startDate = new Date(referenceDate)
-  startDate.setDate(startDate.getDate() - daysToSubtract)
-  return chartData.filter((item) => {
-    const d = new Date(item.date)
-    return d >= startDate && d <= referenceDate
-  })
-}, [])
+  React.useEffect(() => {
+    if (error) toast.error(`Error fetching metrics: ${error.message}`)
+  }, [error])
 
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total Visitors</CardTitle>
+        <CardTitle>Daily Additions</CardTitle>
         <CardDescription>
           Last 7 days
         </CardDescription>
       </CardHeader>
 
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+        {isLoading ? (
+          <div className="h-[250px] w-full grid place-items-center text-muted-foreground text-sm">Loading chart…</div>
+        ) : null}
         <ChartContainer
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <AreaChart data={filteredData}>
+          <AreaChart data={data || []}>
             <defs>
                 <linearGradient id="fillCollege" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--color-college)" stopOpacity={0.8} />
@@ -74,6 +78,10 @@ export function ChartAreaInteractive() {
                 <linearGradient id="fillStudents" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--color-students)" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="var(--color-students)" stopOpacity={0.1} />
+                </linearGradient>
+                <linearGradient id="fillUsers" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-users)" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="var(--color-users)" stopOpacity={0.1} />
                 </linearGradient>
             </defs>
 
@@ -124,6 +132,13 @@ export function ChartAreaInteractive() {
                 type="natural"
                 fill="url(#fillStudents)"
                 stroke="var(--color-students)"
+                stackId="a"
+                />
+                <Area
+                dataKey="users"
+                type="natural"
+                fill="url(#fillUsers)"
+                stroke="var(--color-users)"
                 stackId="a"
                 />
           </AreaChart>

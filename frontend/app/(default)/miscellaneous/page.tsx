@@ -64,9 +64,8 @@ export default function MiscellaneousPage() {
             columns={columns(handleDelete)}
             data={userData}
             searchPlaceholder="Search users..."
-            addTitle="Users"
-            addDescription="List of users"
             searchKeys={["username", "email", "dateLogged"]}
+            hideAddButton
           />
         </div>
       </div>
