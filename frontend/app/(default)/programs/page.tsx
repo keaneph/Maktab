@@ -86,6 +86,23 @@ export default function ProgramsPage() {
     )
     toast.success("Program deleted successfully!")
   }
+
+  async function handleBulkDelete(codes: string[]) {
+    const setCodes = new Set(codes)
+    await globalMutate(
+      "http://localhost:8080/api/programs/",
+      async (current: Programs[] = []) => {
+        await Promise.all(
+          codes.map((code) =>
+            fetch(`http://localhost:8080/api/programs/${code}`, { method: "DELETE", credentials: "include" })
+          )
+        )
+        return current.filter((p: Programs) => !setCodes.has(p.code))
+      },
+      { revalidate: false, optimisticData: (current?: Programs[]) => (current ?? []).filter((p: Programs) => !setCodes.has(p.code)), rollbackOnError: true }
+    )
+    toast.success(`${codes.length} program(s) deleted successfully!`)
+  }
   return (
     <>
       <SiteHeader title="Programs" />
@@ -103,7 +120,8 @@ export default function ProgramsPage() {
               handleDelete,
               handleEdit,
               collegeData.map((c: Colleges) => ({ code: c.code, name: c.name })),
-              programData.map((p: Programs) => p.code.toUpperCase())
+              programData.map((p: Programs) => p.code.toUpperCase()),
+              handleBulkDelete
             )}
             data={programData}
             searchPlaceholder="Search programs..."

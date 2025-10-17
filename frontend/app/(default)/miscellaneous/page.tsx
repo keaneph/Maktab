@@ -48,6 +48,23 @@ export default function MiscellaneousPage() {
     toast.success("User deleted successfully")
   }
 
+  async function handleBulkDelete(usernames: string[]) {
+    const setUsers = new Set(usernames)
+    await globalMutate(
+      "http://localhost:8080/api/users/",
+      async (current: Miscellaneous[] = []) => {
+        await Promise.all(
+          usernames.map((u) =>
+            fetch(`http://localhost:8080/api/users/${u}`, { method: "DELETE", credentials: "include" })
+          )
+        )
+        return current.filter((u: Miscellaneous) => !setUsers.has(u.username))
+      },
+      { revalidate: false, optimisticData: (current?: Miscellaneous[]) => (current ?? []).filter((u: Miscellaneous) => !setUsers.has(u.username)), rollbackOnError: true }
+    )
+    toast.success(`${usernames.length} user(s) deleted successfully`)
+  }
+
   return (
     <>
       <SiteHeader title="Miscellaneous" />
@@ -61,7 +78,7 @@ export default function MiscellaneousPage() {
         />
         <div className="px-4 lg:px-6">
           <DataTable
-            columns={columns(handleDelete)}
+            columns={columns(handleDelete, handleBulkDelete)}
             data={userData}
             searchPlaceholder="Search users..."
             searchKeys={["username", "email", "dateLogged"]}

@@ -87,6 +87,23 @@ export default function StudentsPage() {
     toast.success("Student deleted successfully!")
   }
 
+  async function handleBulkDelete(ids: string[]) {
+    const setIds = new Set(ids)
+    await globalMutate(
+      "http://localhost:8080/api/students/",
+      async (current: Students[] = []) => {
+        await Promise.all(
+          ids.map((id) =>
+            fetch(`http://localhost:8080/api/students/${id}`, { method: "DELETE", credentials: "include" })
+          )
+        )
+        return current.filter((s: Students) => !setIds.has(s.idNo))
+      },
+      { revalidate: false, optimisticData: (current?: Students[]) => (current ?? []).filter((s: Students) => !setIds.has(s.idNo)), rollbackOnError: true }
+    )
+    toast.success(`${ids.length} student(s) deleted successfully!`)
+  }
+
   return (
     <>
       <SiteHeader title="Students" />
@@ -104,7 +121,8 @@ export default function StudentsPage() {
               handleDelete,
               handleEdit,
               programData.map((p: Programs) => ({ code: p.code, name: p.name })),
-              studentData.map((s: Students) => s.idNo.toUpperCase())
+              studentData.map((s: Students) => s.idNo.toUpperCase()),
+              handleBulkDelete
             )}
             data={studentData}
             searchPlaceholder="Search students..."

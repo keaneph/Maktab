@@ -1,6 +1,6 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { ColumnDef, Table } from "@tanstack/react-table"
 import { ArrowUpDown, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -135,19 +135,68 @@ function EditDialog({
 }
 
 // component for rendering dropdown + dialog safely with useState
+// bulk confirmation dialog
+function BulkDeleteDialog({
+  open,
+  onClose,
+  onConfirm,
+  count,
+  noun,
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  count: number
+  noun: string
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Delete {noun}</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete {count} {noun.toLowerCase()}? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex justify-end gap-2">
+          <DialogClose asChild>
+            <Button variant="outline" className="cursor-pointer" onClick={onClose}>Cancel</Button>
+          </DialogClose>
+          <Button
+            variant="destructive"
+            className="cursor-pointer"
+            onClick={() => {
+              onConfirm()
+              onClose()
+            }}
+          >
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function ActionsCell({
   college,
   onDelete,
   onEdit,
+  onBulkDelete,
   existingCodes = [],
+  table,
 }: {
   college: Colleges
   onDelete?: (code: string) => void
   onEdit?: (code: string, data: { code: string; name: string }) => void
+  onBulkDelete?: (codes: string[]) => void
   existingCodes?: string[]
+  table: Table<Colleges>
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
+  const [isBulkOpen, setIsBulkOpen] = React.useState(false)
+  const [pendingCodes, setPendingCodes] = React.useState<string[]>([])
 
   return (
     <>
@@ -169,7 +218,18 @@ function ActionsCell({
           <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
             Edit college
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
+          <DropdownMenuItem
+            onClick={() => {
+              const selected = table.getFilteredSelectedRowModel().rows
+              if (selected.length > 0) {
+                const codes = selected.map((r) => r.original.code)
+                setPendingCodes(codes)
+                setIsBulkOpen(true)
+              } else {
+                setIsDeleteOpen(true)
+              }
+            }}
+          >
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -192,6 +252,22 @@ function ActionsCell({
         collegeName={college.name}
         onConfirm={() => onDelete?.(college.code)}
       />
+      <BulkDeleteDialog
+        open={isBulkOpen}
+        onClose={() => setIsBulkOpen(false)}
+        count={pendingCodes.length}
+        noun="Colleges"
+        onConfirm={async () => {
+          if (pendingCodes.length === 0) return
+          if (onBulkDelete) {
+            await onBulkDelete(pendingCodes)
+          } else {
+            await Promise.all(pendingCodes.map((c) => onDelete?.(c)))
+          }
+          table.resetRowSelection()
+          setPendingCodes([])
+        }}
+      />
     </>
   )
 }
@@ -200,6 +276,7 @@ function ActionsCell({
 export const columns = (
   onDelete?: (code: string) => void,
   onEdit?: (code: string, data: { code: string; name: string }) => void,
+  onBulkDelete?: (codes: string[]) => void,
   existingCodes?: string[]
 ): ColumnDef<Colleges>[] => [
   {
@@ -277,12 +354,14 @@ export const columns = (
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => (
+    cell: ({ row, table }) => (
       <ActionsCell 
         college={row.original} 
         onDelete={onDelete} 
         onEdit={onEdit} 
+        onBulkDelete={onBulkDelete}
         existingCodes={existingCodes}
+        table={table}
       />
     ),
   },

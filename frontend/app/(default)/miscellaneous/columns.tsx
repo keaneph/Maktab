@@ -1,6 +1,6 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { ColumnDef, Table } from "@tanstack/react-table"
 import { ArrowUpDown, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -72,14 +72,63 @@ function DeleteDialog({
 }
 
 // component for rendering dropdown + dialog safely with useState (mirrors Colleges)
+// confirmation dialog for bulk delete
+function BulkDeleteDialog({
+  open,
+  onClose,
+  onConfirm,
+  count,
+  noun,
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  count: number
+  noun: string
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Delete {noun}</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete {count} {noun.toLowerCase()}? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex justify-end gap-2">
+          <DialogClose asChild>
+            <Button variant="outline" className="cursor-pointer" onClick={onClose}>Cancel</Button>
+          </DialogClose>
+          <Button
+            variant="destructive"
+            className="cursor-pointer"
+            onClick={() => {
+              onConfirm()
+              onClose()
+            }}
+          >
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function ActionsCell({
   user,
   onDelete,
+  onBulkDelete,
+  table,
 }: {
   user: Miscellaneous
   onDelete?: (username: string) => void
+  onBulkDelete?: (usernames: string[]) => void
+  table: Table<Miscellaneous>
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
+  const [isBulkOpen, setIsBulkOpen] = React.useState(false)
+  const [pendingUsernames, setPendingUsernames] = React.useState<string[]>([])
   return (
     <>
       <DropdownMenu>
@@ -95,7 +144,18 @@ function ActionsCell({
             Copy user email
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
+          <DropdownMenuItem
+            onClick={() => {
+              const selected = table.getFilteredSelectedRowModel().rows
+              if (selected.length > 0) {
+                const usernames = selected.map((r) => r.original.username)
+                setPendingUsernames(usernames)
+                setIsBulkOpen(true)
+              } else {
+                setIsDeleteOpen(true)
+              }
+            }}
+          >
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -107,6 +167,22 @@ function ActionsCell({
         username={user.username}
         onConfirm={() => onDelete?.(user.username)}
       />
+      <BulkDeleteDialog
+        open={isBulkOpen}
+        onClose={() => setIsBulkOpen(false)}
+        count={pendingUsernames.length}
+        noun="Users"
+        onConfirm={async () => {
+          if (pendingUsernames.length === 0) return
+          if (onBulkDelete) {
+            await onBulkDelete(pendingUsernames)
+          } else {
+            await Promise.all(pendingUsernames.map((u) => onDelete?.(u)))
+          }
+          table.resetRowSelection()
+          setPendingUsernames([])
+        }}
+      />
     </>
   )
 }
@@ -114,6 +190,7 @@ function ActionsCell({
 // main column definition
 export const columns = (
   onDelete?: (username: string) => void,
+  onBulkDelete?: (usernames: string[]) => void,
 ): ColumnDef<Miscellaneous>[] => [
     {
     id: "select",
@@ -181,8 +258,8 @@ export const columns = (
     accessorKey: "actions",
     header: "Actions",
     id: "actions",
-    cell: ({ row }) => (
-      <ActionsCell user={row.original} onDelete={onDelete} />
+    cell: ({ row, table }) => (
+      <ActionsCell user={row.original} onDelete={onDelete} onBulkDelete={onBulkDelete} table={table} />
     ),
   },
 ]

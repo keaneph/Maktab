@@ -105,6 +105,28 @@ export default function CollegesPage() {
     toast.success("College deleted successfully!")
   }
 
+  // bulk delete for colleges with single mutate for optimistic UI
+  async function handleBulkDelete(codes: string[]) {
+    const setCodes = new Set(codes)
+    await globalMutate(
+      "http://localhost:8080/api/colleges/",
+      async (current: Colleges[] = []) => {
+        await Promise.all(
+          codes.map((code) =>
+            fetch(`http://localhost:8080/api/colleges/${code}`, { method: "DELETE", credentials: "include" })
+          )
+        )
+        return current.filter((c: Colleges) => !setCodes.has(c.code))
+      },
+      {
+        revalidate: false,
+        optimisticData: (current?: Colleges[]) => (current ?? []).filter((c: Colleges) => !setCodes.has(c.code)),
+        rollbackOnError: true,
+      }
+    )
+    toast.success(`${codes.length} college(s) deleted successfully!`)
+  }
+
   return (
     <>
       <SiteHeader title="Colleges"/>
@@ -124,6 +146,7 @@ export default function CollegesPage() {
             columns={columns(
               handleDelete, 
               handleEdit, 
+              handleBulkDelete,
               collegeData.map((c: Colleges) => c.code.toUpperCase()))}
             data={collegeData}
             searchPlaceholder="Search colleges..."

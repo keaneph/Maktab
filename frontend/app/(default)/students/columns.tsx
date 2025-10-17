@@ -1,6 +1,6 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { ColumnDef, Table } from "@tanstack/react-table"
 import { ArrowUpDown, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -148,21 +148,70 @@ function EditDialog({
 }
 
 // component for rendering dropdown + dialog safely with useState
+// bulk confirmation dialog
+function BulkDeleteDialog({
+  open,
+  onClose,
+  onConfirm,
+  count,
+  noun,
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  count: number
+  noun: string
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Delete {noun}</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete {count} {noun.toLowerCase()}? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex justify-end gap-2">
+          <DialogClose asChild>
+            <Button variant="outline" className="cursor-pointer" onClick={onClose}>Cancel</Button>
+          </DialogClose>
+          <Button
+            variant="destructive"
+            className="cursor-pointer"
+            onClick={() => {
+              onConfirm()
+              onClose()
+            }}
+          >
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function ActionsCell({
   student,
   onDelete,
   onEdit,
   programs,
   existingIds = [],
+  onBulkDelete,
+  table,
 }: {
   student: Students
   onDelete?: (idNo: string) => void
   onEdit?: (oldId: string, data: { idNo: string; firstName: string; lastName: string; course: string; year: string; gender: string }) => void
   programs: Array<{ code: string; name: string }>
   existingIds?: string[]
+  onBulkDelete?: (ids: string[]) => void
+  table: Table<Students>
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
+  const [isBulkOpen, setIsBulkOpen] = React.useState(false)
+  const [pendingIds, setPendingIds] = React.useState<string[]>([])
 
   return (
     <>
@@ -184,7 +233,18 @@ function ActionsCell({
           <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
             Edit student
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setIsDeleteOpen(true)}>
+          <DropdownMenuItem
+            onClick={() => {
+              const selected = table.getFilteredSelectedRowModel().rows
+              if (selected.length > 0) {
+                const ids = selected.map((r) => r.original.idNo)
+                setPendingIds(ids)
+                setIsBulkOpen(true)
+              } else {
+                setIsDeleteOpen(true)
+              }
+            }}
+          >
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -208,6 +268,22 @@ function ActionsCell({
         studentName={`${student.firstName} ${student.lastName}`}
         onConfirm={() => onDelete?.(student.idNo)}
       />
+      <BulkDeleteDialog
+        open={isBulkOpen}
+        onClose={() => setIsBulkOpen(false)}
+        count={pendingIds.length}
+        noun="Students"
+        onConfirm={async () => {
+          if (pendingIds.length === 0) return
+          if (onBulkDelete) {
+            await onBulkDelete(pendingIds)
+          } else {
+            await Promise.all(pendingIds.map((i) => onDelete?.(i)))
+          }
+          table.resetRowSelection()
+          setPendingIds([])
+        }}
+      />
     </>
   )
 }
@@ -217,7 +293,8 @@ export const columns = (
   onDelete?: (idNo: string) => void,
   onEdit?: (oldId: string, data: { idNo: string; firstName: string; lastName: string; course: string; year: string; gender: string }) => void,
   programs: Array<{ code: string; name: string }> = [],
-  existingIds?: string[]
+  existingIds?: string[],
+  onBulkDelete?: (ids: string[]) => void,
 ): ColumnDef<Students>[] => [
     {
     id: "select",
@@ -354,13 +431,15 @@ export const columns = (
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => (
+    cell: ({ row, table }) => (
       <ActionsCell 
         student={row.original} 
         onDelete={onDelete} 
         onEdit={onEdit} 
         programs={programs}
         existingIds={existingIds}
+        onBulkDelete={onBulkDelete}
+        table={table}
       />
     ),
   },
