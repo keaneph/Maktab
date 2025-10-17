@@ -110,7 +110,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       <div className="flex items-center justify-center gap-2 peer-data-[active=true]/menu-button:opacity-100">
           <div className="mb-6 mr-2 text-center flex items-center justify-center gap-2">
             <TreePalm className="!size-8" />
-            <h1 className="text-2xl font-bold">Welcome back to Maktab!</h1>
+            <h1 className="text-2xl font-bold">Sign up to Maktab!</h1>
           </div>
       </div>
       <Card {...props}>
