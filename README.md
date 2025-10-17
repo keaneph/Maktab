@@ -16,7 +16,7 @@ A modern Student Information System built with Flask (Python) for the backend an
 - Frontend: Next.js, Tailwind CSS, ShadCN UI, SWR, TanStack Table   
 
 ## Dashboard Demo
-![dashboard_demo](https://github.com/user-attachments/assets/30257e27-5b53-4a81-8b64-1a86d6788293)
+![dashboard_demo](https://github.com/user-attachments/assets/50d25177-a44c-449b-9ede-64a1ea7e79e6)
 
 ## Getting Started
 
@@ -57,3 +57,7 @@ npm run build, then npm run start (for prod)
 
 ## License
 This project is licensed under the terms of the LICENSE file in this repository.
+
+## Acknowledgements
+- [@SamHuertas](https://github.com/SamHuertas) - for his terms and conditions
+- [@brexer](https://github.com/brexer) - for his sign up form criticism
