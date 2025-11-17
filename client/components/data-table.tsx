@@ -59,7 +59,7 @@ interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
   /** hide the add button and dialog entirely */
   hideAddButton?: boolean;
   /** custom form fields for the dialog */
-  renderAddForm?: (props: { 
+  renderAddForm?: (props: {
     onSuccess: () => void;
     onValidityChange: (isValid: boolean) => void;
   }) => React.ReactNode;
@@ -69,7 +69,7 @@ interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
   searchKeys?: string[];
   // omissible function to handle form submission
   onAdd?: (formData: TFormData) => void;
-  onDelete?: (code: string) => Promise<void> | void
+  onDelete?: (code: string) => Promise<void> | void;
 }
 
 export function DataTable<TData, TValue, TFormData = Partial<TData>>({
@@ -105,13 +105,13 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
     onGlobalFilterChange: setGlobalFilter,
     onRowSelectionChange: setRowSelection,
     globalFilterFn: (row, _columnId, filterValue) => {
-        const search = filterValue.toLowerCase();
-        return searchKeys.some((key) => {
-    const val = (row.getValue(key) as string) ?? "";
-    return val.toString().toLowerCase().includes(search);
-    });
+      const search = filterValue.toLowerCase();
+      return searchKeys.some((key) => {
+        const val = (row.getValue(key) as string) ?? "";
+        return val.toString().toLowerCase().includes(search);
+      });
     },
-    });
+  });
 
   return (
     <div>
@@ -130,7 +130,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
         </div>
         <div className="flex items-center py-4">
           {!hideAddButton && (
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}> 
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear">
                   <Plus />
@@ -144,20 +144,26 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
                   <DialogDescription>{addDescription}</DialogDescription>
                 </DialogHeader>
 
-                {renderAddForm?.({ 
-                    onSuccess: () => setIsDialogOpen(false),
-                    onValidityChange: setIsFormValid,
-                  })}
+                {renderAddForm?.({
+                  onSuccess: () => setIsDialogOpen(false),
+                  onValidityChange: setIsFormValid,
+                })}
 
                 <DialogFooter className="flex justify-end">
                   <DialogClose asChild>
-                    <Button variant="outline" className="cursor-pointer">Cancel</Button>
+                    <Button variant="outline" className="cursor-pointer">
+                      Cancel
+                    </Button>
                   </DialogClose>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     form={addFormId}
                     disabled={!isFormValid}
-                    className={!isFormValid ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
+                    className={
+                      !isFormValid
+                        ? "bg-gray-400 hover:bg-gray-400"
+                        : "cursor-pointer"
+                    }
                   >
                     Save changes
                   </Button>
@@ -195,14 +201,20 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -224,9 +236,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue
-                placeholder={table.getState().pagination.pageSize}
-              />
+              <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
               {[10, 20, 25, 30, 40, 50].map((pageSize) => (
