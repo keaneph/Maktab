@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider"
-import { ActiveThemeProvider } from "@/components/active-theme"
-import { SwrProvider } from "@/components/swr-provider"
-import { AuthProvider } from "@/lib/auth"
-import { Toaster } from "sonner"
+import { ThemeProvider } from "@/components/theme-provider";
+import { ActiveThemeProvider } from "@/components/active-theme";
+import { SwrProvider } from "@/components/swr-provider";
+import { Toaster } from "sonner";
 import { cookies } from "next/headers";
 import { cn } from "@/lib/utils";
 
@@ -18,30 +17,32 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore= await cookies();
-  const activeThemeValue = cookieStore.get("theme")?.value
-  const isScaled = activeThemeValue?.endsWith("-scaled")
+  const cookieStore = await cookies();
+  const activeThemeValue = cookieStore.get("theme")?.value;
+  const isScaled = activeThemeValue?.endsWith("-scaled");
 
   return (
     <html lang="en" suppressHydrationWarning>
-        <body className={cn ("bg-background overscroll-none font-sans antialiased",
+      <body
+        className={cn(
+          "bg-background overscroll-none font-sans antialiased",
           activeThemeValue ? `theme-${activeThemeValue}` : "",
-          isScaled ? "theme-scaled" : "",
-        )}>
-      <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-            enableColorScheme>
-            <ActiveThemeProvider initialTheme={activeThemeValue}>
-              <SwrProvider>
-                <AuthProvider>
-                  {children}
-                  <Toaster />
-                </AuthProvider>
-              </SwrProvider>
-        </ActiveThemeProvider>
+          isScaled ? "theme-scaled" : ""
+        )}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          enableColorScheme
+        >
+          <ActiveThemeProvider initialTheme={activeThemeValue}>
+            <SwrProvider>
+              {children}
+              <Toaster position="top-center" />
+            </SwrProvider>
+          </ActiveThemeProvider>
         </ThemeProvider>
       </body>
     </html>

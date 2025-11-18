@@ -1,115 +1,110 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/client";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { FieldError } from "@/components/ui/field"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useAuth } from "@/lib/auth"
-import { toast } from "sonner"
-import { 
-  TreePalm,  
-} from "lucide-react"
-
-const schema = z.object({
-  usernameOrEmail: z.string().min(1, "Username or Email is required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-})
-
-type LoginValues = z.infer<typeof schema>
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { login } = useAuth()
-  const { register, handleSubmit, formState: { errors, isSubmitting, isValid } } = useForm<LoginValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { usernameOrEmail: "", password: "" },
-    mode: "onChange",
-    criteriaMode: "all",
-  })
+}: React.ComponentPropsWithoutRef<"div">) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  async function onSubmit(values: LoginValues) {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
+
     try {
-      await login(values, searchParams.get("next") || undefined)
-      toast.success("Logged in successfully")
-    } catch (err: unknown) {
-      toast.error((err as Error)?.message || "Login failed")
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      // Update this route to redirect to an authenticated route. The user already has an active session.
+      router.push("/dashboard");
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
+
   return (
-    <div>
-      <div className="flex items-center justify-center gap-2 peer-data-[active=true]/menu-button:opacity-100">
-        <div className="mb-6 mr-2 text-center flex items-center justify-center gap-2">
-          <TreePalm className="!size-8" />
-          <h1 className="text-2xl font-bold">Welcome back to Maktab!</h1>
-          </div>
-        </div>
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Login to your account</CardTitle> 
-            <CardDescription>
-              Enter your email below to login to your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="usernameOrEmail">Username or Email</FieldLabel>
-                  <Input
-                    id="usernameOrEmail"
-                    type="text"
-                    placeholder="nearpharelle@gmail.com"
-                    {...register("usernameOrEmail")}
-                  />
-                  <FieldError errors={[errors.usernameOrEmail]} />
-                </Field>
-                <Field>
-                  <div className="flex items-center">
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                  </div>
-                  <Input id="password" type="password" placeholder="********" {...register("password")} />
-                  <FieldError errors={[errors.password]} />
-                </Field>
-                <Field>
-                <Button
-                  type="submit"
-                  disabled={!isValid || isSubmitting}
-                  className={!isValid || isSubmitting ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"}
-                >
-                  {isSubmitting ? "Logging in..." : "Login"}
-                </Button>
-                  <FieldDescription className="text-center">
-                    Don&apos;t have an account? <Link href="/signup">Sign up</Link>
-                  </FieldDescription>
-                </Field>
-              </FieldGroup>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin}>
+            <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Logging in..." : "Login"}
+              </Button>
+            </div>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/auth/sign-up"
+                className="underline underline-offset-4"
+              >
+                Sign up
+              </Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }

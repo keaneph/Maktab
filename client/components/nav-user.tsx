@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   BadgeCheck,
@@ -7,12 +7,8 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
-} from "lucide-react"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,29 +17,39 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { useAuth } from "@/lib/auth"
+} from "@/components/ui/sidebar";
+import { LogoutButton } from "./logout-button";
+import { createClient } from "@/lib/client";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string
-    email: string
-    avatar: string
-  }
+    name: string;
+    email: string;
+    avatar: string;
+  };
 }) {
-  const { isMobile } = useSidebar()
-  const { logout } = useAuth()
-  const avatarSrc = user.avatar && user.avatar.trim().length > 0 ? user.avatar : "/ent.jpg"
+  const { isMobile } = useSidebar();
+  const avatarSrc =
+    user.avatar && user.avatar.trim().length > 0 ? user.avatar : "/ent.jpg";
+  const router = useRouter();
 
-  return (  
+  const logout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+  };
+
+  return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
@@ -82,13 +88,24 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); logout(); }}>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onSelect={(e) => {
+                e.preventDefault();
+              }}
+            >
               <LogOut />
-              Log out
+              <Button
+                variant="ghost"
+                className="m-0 p-0 font-normal cursor-pointer"
+                onClick={logout}
+              >
+                Logout
+              </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

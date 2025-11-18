@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import Link from "next/link"
+import Link from "next/link";
 
-import { usePathname } from "next/navigation"
+import { usePathname } from "next/navigation";
 
-import { 
-  TreePalm, 
-  Home, 
-  School, 
-  GraduationCap, 
-  User, 
-  Settings,  
-} from "lucide-react"
+import {
+  TreePalm,
+  Home,
+  School,
+  GraduationCap,
+  User,
+  Settings,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -23,9 +23,8 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarFooter,
-} from "@/components/ui/sidebar"
-import { NavUser } from "./nav-user"
-import { useAuth } from "@/lib/auth"
+} from "@/components/ui/sidebar";
+import { NavUser } from "./nav-user";
 
 const items = [
   {
@@ -53,55 +52,58 @@ const items = [
     url: "/miscellaneous",
     icon: Settings,
   },
-]
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname()
-  const { user } = useAuth()
+  const pathname = usePathname();
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-            asChild 
-            className="flex items-center gap-2 peer-data-[active=true]/menu-button:opacity-100">
+              asChild
+              className="flex items-center gap-2 peer-data-[active=true]/menu-button:opacity-100"
+            >
               <Link href={items[0].url}>
                 <TreePalm className="!size-5" />
-                  <span className="text-base font-semibold">Maktab</span>
+                <span className="text-base font-semibold">Maktab</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-      <SidebarGroup>
-        <SidebarGroupContent className="flex flex-col gap-2">
-          <SidebarMenu>
-                {items.map((item) => {
-                  const isActive = pathname.startsWith(item.url) // highlight current
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={isActive}>
-                        <Link href={item.url} className="flex items-center gap-2">
-                          <item.icon className="h-5 w-5" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupContent className="flex flex-col gap-2">
+            <SidebarMenu>
+              {items.map((item) => {
+                const isActive = pathname.startsWith(item.url); // highlight current
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <Link href={item.url} className="flex items-center gap-2">
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={{
-          name: user?.username || "User",
-          email: user?.email || "",
-          avatar: "",
-        }}/>
+        <NavUser
+          user={{
+            name: "User Name",
+            email: "user@example.com",
+            avatar: "path/to/avatar.jpg",
+          }}
+        />
       </SidebarFooter>
-    </Sidebar>  
-  )
+    </Sidebar>
+  );
 }

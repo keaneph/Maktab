@@ -1,95 +1,87 @@
-from flask import Blueprint, request, jsonify, g
-from datetime import date, datetime
-from db import get_conn, put_conn
-from auth import require_auth
+from flask import Blueprint, request, jsonify
+from services.supabase_client import supabase
 
 programs_bp = Blueprint("programs", __name__, url_prefix="/api/programs")
 
-def format_programs_row(row):
+def format_program_row(row):
     return {
-        "code": row[0],
-        "name": row[1],
-        "college_code": row[2],
-        "dateCreated": row[3].isoformat() if isinstance(row[3], (date, datetime)) else row[3],
-        "addedBy": row[4]
+        "code": row["code"],
+        "name": row["name"],
+        "college_code": row["college_code"],
     }
 
 # GET all programs
 @programs_bp.route("/", methods=["GET"])
 def get_programs():
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM programs;")
-        rows = cur.fetchall()
-        cur.close()
-    finally:
-        put_conn(conn)
+        result = supabase.table("programs").select("*").execute()
+        rows = result.data or []
+        return jsonify([format_program_row(r) for r in rows]), 200
+    except Exception as e:
+        print("Supabase GET programs error:", e)
+        return jsonify({"error": "Failed to fetch programs"}), 500
 
-    programs = [format_programs_row(row) for row in rows]
-    return jsonify(programs), 200
-    
+
 # POST create a new program
 @programs_bp.route("/", methods=["POST"])
-@require_auth()
 def create_program():
-    data = request.get_json()
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO programs (code, name, college_code, dateCreated, addedBy) VALUES (%s, %s, %s, %s, %s) RETURNING *;",
-            (data["code"], data["name"], data["college_code"], data["dateCreated"], g.current_user["username"]),
-        )
-        new_program = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
+        data = request.get_json()
 
-    return jsonify(format_programs_row(new_program)), 201
+        payload = {
+            "code": data["code"],
+            "name": data["name"],
+            "college_code": data["college_code"],
+        }
 
-# PUT update a programs by code
+        result = supabase.table("programs").insert(payload).execute()
+        new_program = result.data[0] if result.data else None
+
+        return jsonify(format_program_row(new_program)), 201
+    except Exception as e:
+        print("Supabase CREATE program error:", e)
+        return jsonify({"error": "Failed to create program"}), 500
+
+
+# PUT update a program by code
 @programs_bp.route("/<string:code>", methods=["PUT"])
-@require_auth()
 def update_program(code):
-    data = request.get_json()
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE programs SET code = %s, name = %s, college_code = %s, dateCreated = %s, addedBy = %s WHERE code = %s RETURNING *;",
-            (data["code"], data["name"], data["college_code"], data["dateCreated"], g.current_user["username"], code),
-        )
-        updated = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
+        data = request.get_json()
 
-    return jsonify(format_programs_row(updated)), 200
+        payload = {
+            "code": data["code"],
+            "name": data["name"],
+            "college_code": data["college_code"],
+        }
+
+        result = (
+            supabase.table("programs")
+            .update(payload)
+            .eq("code", code)
+            .execute()
+        )
+
+        updated_program = result.data[0] if result.data else None
+        return jsonify(format_program_row(updated_program)), 200
+    except Exception as e:
+        print("Supabase UPDATE program error:", e)
+        return jsonify({"error": "Failed to update program"}), 500
+
 
 # DELETE a program by code
 @programs_bp.route("/<string:code>", methods=["DELETE"])
-@require_auth()
 def delete_program(code):
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM programs WHERE code = %s RETURNING *;", (code,))
-        deleted = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
+        result = (
+            supabase.table("programs")
+            .delete()
+            .eq("code", code)
+            .execute()
+        )
 
-    return jsonify(format_programs_row(deleted)), 200
+        deleted_program = result.data[0] if result.data else None
+        return jsonify(format_program_row(deleted_program)), 200
+    except Exception as e:
+        print("Supabase DELETE program error:", e)
+        return jsonify({"error": "Failed to delete program"}), 500

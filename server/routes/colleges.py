@@ -1,94 +1,84 @@
-from flask import Blueprint, request, jsonify, g
-from datetime import date, datetime
-from db import get_conn, put_conn
-from auth import require_auth
+from flask import Blueprint, request, jsonify
+from services.supabase_client import supabase
 
 colleges_bp = Blueprint("colleges", __name__, url_prefix="/api/colleges")
 
 def format_college_row(row):
     return {
-        "code": row[0],
-        "name": row[1],
-        "dateCreated": row[2].isoformat() if isinstance(row[2], (date, datetime)) else row[2],
-        "addedBy": row[3]
+        "code": row["code"],
+        "name": row["name"],
     }
 
 # GET all colleges
 @colleges_bp.route("/", methods=["GET"])
 def get_colleges():
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM colleges;")
-        rows = cur.fetchall()
-        cur.close()
-    finally:
-        put_conn(conn)
+        result = supabase.table("colleges").select("*").execute()
+        rows = result.data or []
+        return jsonify([format_college_row(r) for r in rows]), 200
+    except Exception as e:
+        print("Supabase GET colleges error:", e)
+        return jsonify({"error": "Failed to fetch colleges"}), 500
 
-    colleges = [format_college_row(row) for row in rows]
-    return jsonify(colleges), 200
 
 # POST create a new college
 @colleges_bp.route("/", methods=["POST"])
-@require_auth()
 def create_college():
-    data = request.get_json()
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO colleges (code, name, dateCreated, addedBy) VALUES (%s, %s, %s, %s) RETURNING *;",
-            (data["code"], data["name"], data["dateCreated"], g.current_user["username"]),
-        )
-        new_college = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
+        data = request.get_json()
 
-    return jsonify(format_college_row(new_college)), 201
+        payload = {
+            "code": data["code"],
+            "name": data["name"],
+        }
+
+        result = supabase.table("colleges").insert(payload).execute()
+        new_row = result.data[0] if result.data else None
+
+        return jsonify(format_college_row(new_row)), 201
+    except Exception as e:
+        print("Supabase CREATE college error:", e)
+        return jsonify({"error": "Failed to create college"}), 500
+
 
 # PUT update a college by code
 @colleges_bp.route("/<string:code>", methods=["PUT"])
-@require_auth()
 def update_college(code):
-    data = request.get_json()
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE colleges SET code = %s, name = %s, dateCreated = %s, addedBy = %s WHERE code = %s RETURNING *;",
-            (data["code"], data["name"], data["dateCreated"], g.current_user["username"], code),
-        )
-        updated = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
+        data = request.get_json() or {}
 
-    return jsonify(format_college_row(updated)), 200
+        payload = {
+            "code": data.get("code"),
+            "name": data.get("name"),
+        }
+
+        result = (
+            supabase.table("colleges")
+            .update(payload)
+            .eq("code", code)
+            .execute()
+        )
+
+        updated = result.data[0] if result.data else None
+        return jsonify(format_college_row(updated)), 200
+    except Exception as e:
+        print("Supabase UPDATE college error:", e)
+        return jsonify({"error": "Failed to update college"}), 500
+
 
 # DELETE a college by code
 @colleges_bp.route("/<string:code>", methods=["DELETE"])
-@require_auth()
 def delete_college(code):
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM colleges WHERE code = %s RETURNING *;", (code,))
-        deleted = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
+        result = (
+            supabase.table("colleges")
+            .delete()
+            .eq("code", code)
+            .execute()
+        )
 
-    return jsonify(format_college_row(deleted)), 200
+        deleted = result.data[0] if result.data else None
+        return jsonify(format_college_row(deleted)), 200
+    except Exception as e:
+        print("Supabase DELETE college error:", e)
+        return jsonify({"error": "Failed to delete college"}), 500

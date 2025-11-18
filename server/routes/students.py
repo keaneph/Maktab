@@ -1,98 +1,96 @@
-from flask import Blueprint, request, jsonify, g
-from datetime import date, datetime
-from db import get_conn, put_conn
-from auth import require_auth
+from flask import Blueprint, request, jsonify
+from server.services.supabase_client import supabase
 
 students_bp = Blueprint("students", __name__, url_prefix="/api/students")
 
-def format_students_row(row):
+def format_student_row(row):
     return {
-        "idNo": row[0],
-        "firstName": row[1],
-        "lastName": row[2],
-        "course": row[3],
-        "year": row[4],
-        "gender": row[5],
-        "dateCreated": row[6].isoformat() if isinstance(row[6], (date, datetime)) else row[6],
-        "addedBy": row[7]
+        "idNo": row["idNo"],
+        "firstName": row["firstName"],
+        "lastName": row["lastName"],
+        "course": row.get("course"),
+        "year": row.get("year"),
+        "gender": row.get("gender"),
     }
 
 # GET all students
 @students_bp.route("/", methods=["GET"])
 def get_students():
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM students;")
-        rows = cur.fetchall()
-        cur.close()
-    finally:
-        put_conn(conn)
+        result = supabase.table("students").select("*").execute()
+        rows = result.data or []
+        return jsonify([format_student_row(r) for r in rows]), 200
+    except Exception as e:
+        print("Supabase GET students error:", e)
+        return jsonify({"error": "Failed to fetch students"}), 500
 
-    students = [format_students_row(row) for row in rows]
-    return jsonify(students), 200
 
 # POST create a new student
 @students_bp.route("/", methods=["POST"])
-@require_auth()
 def create_student():
-    data = request.get_json()
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO students (idNo, firstName, lastName, course, year, gender, dateCreated, addedBy) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING *;",
-            (data["idNo"], data["firstName"], data["lastName"], data["course"], data["year"], data["gender"], data["dateCreated"], g.current_user["username"]),
-        )
-        new_student = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
+        data = request.get_json()
 
-    return jsonify(format_students_row(new_student)), 201
+        payload = {
+            "idNo": data["idNo"],
+            "firstName": data["firstName"],
+            "lastName": data["lastName"],
+            "course": data.get("course"),
+            "year": data.get("year"),
+            "gender": data.get("gender"),
+        }
 
-# PUT update a student by id_no
+        result = supabase.table("students").insert(payload).execute()
+        new_student = result.data[0] if result.data else None
+
+        return jsonify(format_student_row(new_student)), 201
+    except Exception as e:
+        print("Supabase CREATE student error:", e)
+        return jsonify({"error": "Failed to create student"}), 500
+
+
+# PUT update a student by idNo
 @students_bp.route("/<string:id_no>", methods=["PUT"])
-@require_auth()
 def update_student(id_no):
-    data = request.get_json()
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE students SET idNo = %s, firstName = %s, lastName = %s, course = %s, year = %s, gender = %s, dateCreated = %s, addedBy = %s WHERE idNo = %s RETURNING *;",
-            (data["idNo"], data["firstName"], data["lastName"], data["course"], data["year"], data["gender"], data["dateCreated"], g.current_user["username"], id_no),
+        data = request.get_json()
+
+        payload = {
+            "idNo": data["idNo"],
+            "firstName": data["firstName"],
+            "lastName": data["lastName"],
+            "course": data.get("course"),
+            "year": data.get("year"),
+            "gender": data.get("gender"),
+        }
+
+        result = (
+            supabase.table("students")
+            .update(payload)
+            .eq("idNo", id_no)
+            .execute()
         )
-        updated = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
 
-    return jsonify(format_students_row(updated)), 200
+        updated_student = result.data[0] if result.data else None
+        return jsonify(format_student_row(updated_student)), 200
+    except Exception as e:
+        print("Supabase UPDATE student error:", e)
+        return jsonify({"error": "Failed to update student"}), 500
 
-# DELETE a student by id_no
+
+# DELETE a student by idNo
 @students_bp.route("/<string:id_no>", methods=["DELETE"])
-@require_auth()
 def delete_student(id_no):
-    conn = get_conn()
     try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM students WHERE idNo = %s RETURNING *;", (id_no,))
-        deleted = cur.fetchone()
-        conn.commit()
-        cur.close()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
+        result = (
+            supabase.table("students")
+            .delete()
+            .eq("idNo", id_no)
+            .execute()
+        )
 
-    return jsonify(format_students_row(deleted)), 200
+        deleted_student = result.data[0] if result.data else None
+        return jsonify(format_student_row(deleted_student)), 200
+    except Exception as e:
+        print("Supabase DELETE student error:", e)
+        return jsonify({"error": "Failed to delete student"}), 500
