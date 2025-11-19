@@ -1,6 +1,6 @@
 # Maktab
 
-A modern Student Information System built with Flask (Python) for the backend and Next.js (React) for the frontend. UI is powered by Tailwind CSS and ShadCN; state/data fetching uses SWR.
+A modern Student Information System built with Flask (Python) for the backend and Next.js (React) for the frontend. UI is powered by Tailwind CSS and ShadCN.
 
 ## Features
 
@@ -15,7 +15,7 @@ A modern Student Information System built with Flask (Python) for the backend an
 
 - Backend: Flask
 - Database: PostgreSQL
-- Frontend: Next.js, Tailwind CSS, ShadCN UI, SWR, TanStack Table
+- Frontend: Next.js, Tailwind CSS, ShadCN UI, TanStack Table
 
 ## Dashboard Demo
 

@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
-from server.services.supabase_client import supabase
+from services.supabase_client import supabase
+from services.auth import require_auth
 
 users_bp = Blueprint("users", __name__, url_prefix="/api/users")
 
@@ -20,6 +21,7 @@ def list_users():
 
 # DELETE a user by username
 @users_bp.route("/<string:username>", methods=["DELETE"])
+@require_auth
 def delete_user(username: str):
     result = (
         supabase.table("users")

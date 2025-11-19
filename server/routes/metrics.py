@@ -1,8 +1,36 @@
 from flask import Blueprint, jsonify
 from datetime import date, timedelta
-from server.services.supabase_client import supabase
+from services.supabase_client import supabase
 
 metrics_bp = Blueprint("metrics", __name__, url_prefix="/api/metrics")
+
+@metrics_bp.route("/counts", methods=["GET"])
+def get_counts():
+    """Return total counts for all tables - lightweight endpoint."""
+    try:
+        # Simple approach: select single column to minimize data transfer
+        # Then count the results (Supabase returns all matching rows)
+        # This is still much lighter than fetching all columns
+        college_result = supabase.table("colleges").select("code").execute()
+        program_result = supabase.table("programs").select("code").execute()
+        student_result = supabase.table("students").select("idNo").execute()
+        user_result = supabase.table("users").select("username").execute()
+        
+        return jsonify({
+            "colleges": len(college_result.data) if college_result.data else 0,
+            "programs": len(program_result.data) if program_result.data else 0,
+            "students": len(student_result.data) if student_result.data else 0,
+            "users": len(user_result.data) if user_result.data else 0,
+        }), 200
+    except Exception as e:
+        print("Supabase GET counts error:", e)
+        # Return zeros on error so UI doesn't break
+        return jsonify({
+            "colleges": 0,
+            "programs": 0,
+            "students": 0,
+            "users": 0,
+        }), 200
 
 @metrics_bp.route("/daily", methods=["GET"])
 def daily_metrics():

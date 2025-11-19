@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services.supabase_client import supabase
+from services.auth import require_auth
 
 colleges_bp = Blueprint("colleges", __name__, url_prefix="/api/colleges")
 
@@ -23,6 +24,7 @@ def get_colleges():
 
 # POST create a new college
 @colleges_bp.route("/", methods=["POST"])
+@require_auth
 def create_college():
     try:
         data = request.get_json()
@@ -43,6 +45,7 @@ def create_college():
 
 # PUT update a college by code
 @colleges_bp.route("/<string:code>", methods=["PUT"])
+@require_auth
 def update_college(code):
     try:
         data = request.get_json() or {}
@@ -68,6 +71,7 @@ def update_college(code):
 
 # DELETE a college by code
 @colleges_bp.route("/<string:code>", methods=["DELETE"])
+@require_auth
 def delete_college(code):
     try:
         result = (

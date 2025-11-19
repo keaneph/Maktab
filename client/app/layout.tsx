@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/themes/theme-provider"
 import { ActiveThemeProvider } from "@/components/themes/active-theme"
-import { SwrProvider } from "@/components/swr-provider"
+import { CountsProvider } from "@/components/data/counts-context"
 import { Toaster } from "sonner"
 import { cookies } from "next/headers"
 import { cn } from "@/lib/utils"
@@ -38,10 +38,10 @@ export default async function RootLayout({
           enableColorScheme
         >
           <ActiveThemeProvider initialTheme={activeThemeValue}>
-            <SwrProvider>
+            <CountsProvider>
               {children}
               <Toaster position="top-center" />
-            </SwrProvider>
+            </CountsProvider>
           </ActiveThemeProvider>
         </ThemeProvider>
       </body>

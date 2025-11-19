@@ -1,50 +1,68 @@
 "use client"
 
 import * as React from "react"
-import useSWR, { mutate as globalMutate } from "swr"
-import { authFetch } from "@/lib/api"
+import { authFetch, fetcher } from "@/lib/api"
 import { SiteHeader } from "@/components/layout/site-header"
-import { Colleges } from "../colleges/columns"
 import { Programs } from "../programs/columns"
 import { Students, columns } from "./columns"
-import { Miscellaneous } from "../miscellaneous/columns"
 import { DataTable } from "@/components/data/data-table"
 import { SectionCards } from "@/components/data/section-cards"
 import { StudentForm } from "@/components/forms/student-form"
+import { useCounts } from "@/components/data/counts-context"
 import { toast } from "sonner"
 
 export default function StudentsPage() {
-  const { data: collegeData = [], error: collegesErr } = useSWR<
-    Colleges[],
-    Error
-  >("http://localhost:8080/api/colleges/")
-  const { data: studentData = [], error: studentsErr } = useSWR<
-    Students[],
-    Error
-  >("http://localhost:8080/api/students/")
-  const { data: programData = [], error: programsErr } = useSWR<
-    Programs[],
-    Error
-  >("http://localhost:8080/api/programs/")
-  const { data: userData = [], error: userErr } = useSWR<
-    Miscellaneous[],
-    Error
-  >("http://localhost:8080/api/users/")
+  const [studentData, setStudentData] = React.useState<Students[]>([])
+  const [programData, setProgramData] = React.useState<Programs[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
+  const { refreshCounts } = useCounts()
+
+  // Fetch only what we need: programs (for form dropdown) and students (for table)
   React.useEffect(() => {
-    if (collegesErr)
-      toast.error(`Error fetching colleges: ${collegesErr.message}`)
-  }, [collegesErr])
-  React.useEffect(() => {
-    if (studentsErr)
-      toast.error(`Error fetching students: ${studentsErr.message}`)
-  }, [studentsErr])
-  React.useEffect(() => {
-    if (programsErr)
-      toast.error(`Error fetching programs: ${programsErr.message}`)
-  }, [programsErr])
-  React.useEffect(() => {
-    if (userErr) toast.error(`Error fetching users: ${userErr.message}`)
-  }, [userErr])
+    const abortController = new AbortController()
+    
+    async function fetchData() {
+      try {
+        setIsLoading(true)
+        const students = await fetcher<Students[]>("http://localhost:8080/api/students/", { signal: abortController.signal })
+        if (!abortController.signal.aborted) {
+          setStudentData(students)
+        }
+        const programs = await fetcher<Programs[]>("http://localhost:8080/api/programs/", { signal: abortController.signal })
+        if (!abortController.signal.aborted) {
+          setProgramData(programs)
+        }
+      } catch (error) {
+        if (abortController.signal.aborted) return
+        const err = error as Error
+        toast.error(`Error fetching data: ${err.message}`)
+      } finally {
+        if (!abortController.signal.aborted) {
+          setIsLoading(false)
+        }
+      }
+    }
+    fetchData()
+    
+    return () => {
+      abortController.abort()
+    }
+  }, [])
+
+  // Refetch function
+  const refetchData = React.useCallback(async () => {
+    try {
+      const students = await fetcher<Students[]>("http://localhost:8080/api/students/")
+      setStudentData(students)
+      const programs = await fetcher<Programs[]>("http://localhost:8080/api/programs/")
+      setProgramData(programs)
+      // Refresh counts after data changes
+      await refreshCounts()
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Error fetching data: ${err.message}`)
+    }
+  }, [refreshCounts])
 
   async function handleAdd(values: {
     idNo: string
@@ -54,26 +72,22 @@ export default function StudentsPage() {
     year: string
     gender: string
   }) {
-    const newItem: Students = { ...values, year: parseInt(values.year) }
-    await globalMutate(
-      "http://localhost:8080/api/students/",
-      async (current: Students[] = []) => {
-        const res = await authFetch("http://localhost:8080/api/students/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ ...newItem }),
-        })
-        const created = await res.json()
-        return [...current, created]
-      },
-      {
-        revalidate: false,
-        optimisticData: (current?: Students[]) => [...(current ?? []), newItem],
-        rollbackOnError: true,
-      }
-    )
-    toast.success("Student added successfully!")
+    try {
+      const newItem = { ...values, year: parseInt(values.year) }
+      const res = await authFetch("http://localhost:8080/api/students/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(newItem),
+      })
+      if (!res.ok) throw new Error("Failed to add student")
+      await refetchData()
+      toast.success("Student added successfully!")
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Failed to add student: ${err.message}`)
+      throw error
+    }
   }
 
   async function handleEdit(
@@ -87,99 +101,73 @@ export default function StudentsPage() {
       gender: string
     }
   ) {
-    const payload = {
-      ...data,
-      year: parseInt(data.year),
-    }
-    await globalMutate(
-      "http://localhost:8080/api/students/",
-      async (current: Students[] = []) => {
-        const res = await authFetch(
-          `http://localhost:8080/api/students/${oldId}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(payload),
-          }
-        )
-        if (!res.ok) throw new Error("Failed to update student")
-        const updated = await res.json()
-        return current.map((s: Students) => (s.idNo === oldId ? updated : s))
-      },
-      {
-        revalidate: false,
-        optimisticData: (current?: Students[]) =>
-          (current ?? []).map((s: Students) =>
-            s.idNo === oldId ? ({ ...s, ...payload } as Students) : s
-          ),
-        rollbackOnError: true,
+    try {
+      const payload = {
+        ...data,
+        year: parseInt(data.year),
       }
-    )
-    toast.success("Student updated successfully!")
+      const res = await authFetch(
+        `http://localhost:8080/api/students/${oldId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        }
+      )
+      if (!res.ok) throw new Error("Failed to update student")
+      await refetchData()
+      toast.success("Student updated successfully!")
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Failed to update student: ${err.message}`)
+      throw error
+    }
   }
 
   async function handleDelete(id_no: string) {
-    await globalMutate(
-      "http://localhost:8080/api/students/",
-      async (current: Students[] = []) => {
-        const res = await authFetch(
-          `http://localhost:8080/api/students/${id_no}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          }
-        )
-        if (!res.ok) throw new Error("Failed to delete student")
-        await res.json()
-        return current.filter((s: Students) => s.idNo !== id_no)
-      },
-      {
-        revalidate: false,
-        optimisticData: (current?: Students[]) =>
-          (current ?? []).filter((s: Students) => s.idNo !== id_no),
-        rollbackOnError: true,
-      }
-    )
-    toast.success("Student deleted successfully!")
+    try {
+      const res = await authFetch(
+        `http://localhost:8080/api/students/${id_no}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      )
+      if (!res.ok) throw new Error("Failed to delete student")
+      await refetchData()
+      toast.success("Student deleted successfully!")
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Failed to delete student: ${err.message}`)
+      throw error
+    }
   }
 
   async function handleBulkDelete(ids: string[]) {
-    const setIds = new Set(ids)
-    await globalMutate(
-      "http://localhost:8080/api/students/",
-      async (current: Students[] = []) => {
-        await Promise.all(
-          ids.map((id) =>
-            authFetch(`http://localhost:8080/api/students/${id}`, {
-              method: "DELETE",
-              credentials: "include",
-            })
-          )
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          authFetch(`http://localhost:8080/api/students/${id}`, {
+            method: "DELETE",
+            credentials: "include",
+          })
         )
-        return current.filter((s: Students) => !setIds.has(s.idNo))
-      },
-      {
-        revalidate: false,
-        optimisticData: (current?: Students[]) =>
-          (current ?? []).filter((s: Students) => !setIds.has(s.idNo)),
-        rollbackOnError: true,
-      }
-    )
-    toast.success(`${ids.length} student(s) deleted successfully!`)
+      )
+      await refetchData()
+      toast.success(`${ids.length} student(s) deleted successfully!`)
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Failed to delete students: ${err.message}`)
+      throw error
+    }
   }
 
   return (
     <>
       <SiteHeader title="Students" />
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <SectionCards
-          collegeCount={collegeData.length}
-          programCount={programData.length}
-          studentCount={studentData.length}
-          userCount={userData.length}
-          active="student"
-        />
+        <SectionCards active="student" />
         <div className="px-4 lg:px-6">
           <DataTable<
             Students,

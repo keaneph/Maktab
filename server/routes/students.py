@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from server.services.supabase_client import supabase
+from services.supabase_client import supabase
+from services.auth import require_auth
 
 students_bp = Blueprint("students", __name__, url_prefix="/api/students")
 
@@ -27,6 +28,7 @@ def get_students():
 
 # POST create a new student
 @students_bp.route("/", methods=["POST"])
+@require_auth
 def create_student():
     try:
         data = request.get_json()
@@ -51,6 +53,7 @@ def create_student():
 
 # PUT update a student by idNo
 @students_bp.route("/<string:id_no>", methods=["PUT"])
+@require_auth
 def update_student(id_no):
     try:
         data = request.get_json()
@@ -80,6 +83,7 @@ def update_student(id_no):
 
 # DELETE a student by idNo
 @students_bp.route("/<string:id_no>", methods=["DELETE"])
+@require_auth
 def delete_student(id_no):
     try:
         result = (

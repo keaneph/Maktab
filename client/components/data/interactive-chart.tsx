@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import useSWR from "swr"
+import { fetcher } from "@/lib/api"
 import { toast } from "sonner"
 
 import {
@@ -39,14 +39,24 @@ const chartConfig: ChartConfig = {
 }
 
 export function ChartAreaInteractive() {
-  // Use default fetcher from SWR provider (includes auth and error handling)
-  const { data, error, isLoading } = useSWR(
-    "http://localhost:8080/api/metrics/daily"
-  )
+  const [data, setData] = React.useState<any[] | null>(null)
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
-    if (error) toast.error(`Error fetching metrics: ${error.message}`)
-  }, [error])
+    async function fetchMetrics() {
+      try {
+        setIsLoading(true)
+        const metrics = await fetcher("http://localhost:8080/api/metrics/daily")
+        setData(metrics)
+      } catch (error) {
+        const err = error as Error
+        toast.error(`Error fetching metrics: ${err.message}`)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchMetrics()
+  }, [])
 
   return (
     <Card className="@container/card">

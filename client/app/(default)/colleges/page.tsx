@@ -1,84 +1,79 @@
 "use client"
 
 import * as React from "react"
-import useSWR, { mutate as globalMutate } from "swr"
-import { authFetch } from "@/lib/api"
+import { authFetch, fetcher } from "@/lib/api"
 import { SiteHeader } from "@/components/layout/site-header"
 import { Colleges, columns } from "./columns"
-import { Programs } from "../programs/columns"
-import { Students } from "../students/columns"
-import { Miscellaneous } from "../miscellaneous/columns"
 import { DataTable } from "@/components/data/data-table"
 import { SectionCards } from "@/components/data/section-cards"
 import { CollegeForm } from "@/components/forms/college-form"
+import { useCounts } from "@/components/data/counts-context"
 import { toast } from "sonner"
 
 export default function CollegesPage() {
-  const { data: collegeData = [], error: collegesErr } = useSWR<
-    Colleges[],
-    Error
-  >("http://localhost:8080/api/colleges/")
+  const [collegeData, setCollegeData] = React.useState<Colleges[]>([])
+  const { refreshCounts } = useCounts()
 
-  const { data: programData = [], error: programsErr } = useSWR<
-    Programs[],
-    Error
-  >("http://localhost:8080/api/programs/")
+  // Fetch only what we need: colleges (for table)
+  React.useEffect(() => {
+    const abortController = new AbortController()
+    
+    async function fetchData() {
+      try {
+        const colleges = await fetcher<Colleges[]>(
+          "http://localhost:8080/api/colleges/",
+          { signal: abortController.signal }
+        )
+        if (!abortController.signal.aborted) {
+          setCollegeData(colleges)
+        }
+      } catch (error) {
+        if (abortController.signal.aborted) return // Ignore aborted requests
+        const err = error as Error
+        toast.error(`Error fetching data: ${err.message}`)
+      }
+    }
+    fetchData()
+    
+    return () => {
+      abortController.abort()
+    }
+  }, [])
 
-  const { data: studentData = [], error: studentsErr } = useSWR<
-    Students[],
-    Error
-  >("http://localhost:8080/api/students/")
-
-  const { data: userData = [], error: userErr } = useSWR<
-    Miscellaneous[],
-    Error
-  >("http://localhost:8080/api/users/")
-
-  React.useEffect(() => {
-    if (collegesErr)
-      toast.error(`Error fetching colleges: ${collegesErr.message}`)
-  }, [collegesErr])
-  React.useEffect(() => {
-    if (programsErr)
-      toast.error(`Error fetching programs: ${programsErr.message}`)
-  }, [programsErr])
-  React.useEffect(() => {
-    if (studentsErr)
-      toast.error(`Error fetching students: ${studentsErr.message}`)
-  }, [studentsErr])
-  React.useEffect(() => {
-    if (userErr) toast.error(`Error fetching users: ${userErr.message}`)
-  }, [userErr])
+  // Refetch function
+  const refetchData = React.useCallback(async () => {
+    try {
+      const colleges = await fetcher<Colleges[]>(
+        "http://localhost:8080/api/colleges/"
+      )
+      setCollegeData(colleges)
+      // Refresh counts after data changes
+      await refreshCounts()
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Error fetching data: ${err.message}`)
+    }
+  }, [refreshCounts])
 
   // handler for adding a college
   // this makes sure that when i call this function, it passes the right values
   async function handleAdd(values: { code: string; name: string }) {
-    const newItem: Colleges = {
-      ...values,
+    try {
+      const res = await authFetch("http://localhost:8080/api/colleges/", {
+        method: "POST",
+        body: JSON.stringify({
+          code: values.code,
+          name: values.name,
+        }),
+      })
+      if (!res.ok) throw new Error("Failed to add")
+      await refetchData()
+      toast.success("College added successfully!")
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Failed to add college: ${err.message}`)
+      throw error
     }
-
-    // optimistic update
-    await globalMutate(
-      "http://localhost:8080/api/colleges/",
-      async (current: Colleges[] = []) => {
-        const res = await authFetch("http://localhost:8080/api/colleges/", {
-          method: "POST",
-          body: JSON.stringify({
-            code: newItem.code,
-            name: newItem.name,
-          }),
-        })
-        if (!res.ok) throw new Error("Failed to add")
-        const created = await res.json()
-        return [...current, created]
-      },
-      {
-        revalidate: false,
-        optimisticData: (current?: Colleges[]) => [...(current ?? []), newItem],
-        rollbackOnError: true,
-      }
-    )
-    toast.success("College added successfully!")
   }
 
   // handler for editing a college
@@ -86,96 +81,67 @@ export default function CollegesPage() {
     oldCode: string,
     data: { code: string; name: string }
   ) {
-    const payload = {
-      ...data,
+    try {
+      const res = await authFetch(
+        `http://localhost:8080/api/colleges/${oldCode}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+        }
+      )
+      if (!res.ok) throw new Error("Failed to update college")
+      await refetchData()
+      toast.success("College updated successfully!")
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Failed to update college: ${err.message}`)
+      throw error
     }
-    await globalMutate(
-      "http://localhost:8080/api/colleges/",
-      async (current: Colleges[] = []) => {
-        const res = await authFetch(
-          `http://localhost:8080/api/colleges/${oldCode}`,
-          {
-            method: "PUT",
-            body: JSON.stringify(payload),
-          }
-        )
-        if (!res.ok) throw new Error("Failed to update college")
-        const updated = await res.json()
-        return current.map((c: Colleges) => (c.code === oldCode ? updated : c))
-      },
-      {
-        revalidate: false,
-        optimisticData: (current?: Colleges[]) =>
-          (current ?? []).map((c: Colleges) =>
-            c.code === oldCode ? ({ ...c, ...payload } as Colleges) : c
-          ),
-        rollbackOnError: true,
-      }
-    )
-    toast.success("College updated successfully!")
   }
 
   // handler for deleting a college
   async function handleDelete(code: string) {
-    await globalMutate(
-      "http://localhost:8080/api/colleges/",
-      async (current: Colleges[] = []) => {
-        const res = await authFetch(
-          `http://localhost:8080/api/colleges/${code}`,
-          {
-            method: "DELETE",
-          }
-        )
-        if (!res.ok) throw new Error("Failed to delete college")
-        await res.json()
-        return current.filter((c: Colleges) => c.code !== code)
-      },
-      {
-        revalidate: false,
-        optimisticData: (current?: Colleges[]) =>
-          (current ?? []).filter((c: Colleges) => c.code !== code),
-        rollbackOnError: true,
-      }
-    )
-    toast.success("College deleted successfully!")
+    try {
+      const res = await authFetch(
+        `http://localhost:8080/api/colleges/${code}`,
+        {
+          method: "DELETE",
+        }
+      )
+      if (!res.ok) throw new Error("Failed to delete college")
+      await refetchData()
+      toast.success("College deleted successfully!")
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Failed to delete college: ${err.message}`)
+      throw error
+    }
   }
 
-  // bulk delete for colleges with single mutate for optimistic UI
+  // bulk delete for colleges
   async function handleBulkDelete(codes: string[]) {
-    const setCodes = new Set(codes)
-    await globalMutate(
-      "http://localhost:8080/api/colleges/",
-      async (current: Colleges[] = []) => {
-        await Promise.all(
-          codes.map((c) =>
-            authFetch(`http://localhost:8080/api/colleges/${c}`, {
-              method: "DELETE",
-            })
-          )
+    try {
+      await Promise.all(
+        codes.map((c) =>
+          authFetch(`http://localhost:8080/api/colleges/${c}`, {
+            method: "DELETE",
+          })
         )
-        return current.filter((c: Colleges) => !setCodes.has(c.code))
-      },
-      {
-        revalidate: false,
-        optimisticData: (current?: Colleges[]) =>
-          (current ?? []).filter((c: Colleges) => !setCodes.has(c.code)),
-        rollbackOnError: true,
-      }
-    )
-    toast.success(`${codes.length} college(s) deleted successfully!`)
+      )
+      await refetchData()
+      toast.success(`${codes.length} college(s) deleted successfully!`)
+    } catch (error) {
+      const err = error as Error
+      toast.error(`Failed to delete colleges: ${err.message}`)
+      throw error
+    }
   }
 
   return (
     <>
       <SiteHeader title="Colleges" />
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <SectionCards
-          collegeCount={collegeData.length}
-          programCount={programData.length}
-          studentCount={studentData.length}
-          userCount={userData.length}
-          active="college"
-        />
+        <SectionCards active="college" />
         <div className="px-4 lg:px-6">
           <DataTable<Colleges, unknown, Pick<Colleges, "code" | "name">>
             columns={columns(

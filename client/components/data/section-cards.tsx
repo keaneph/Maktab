@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, ExternalLink } from "lucide-react"
 import * as React from "react"
-import useSWR from "swr"
+import { fetcher } from "@/lib/api"
+import { useCounts } from "./counts-context"
 
 import Link from "next/link"
 
@@ -15,23 +16,28 @@ import {
 } from "@/components/ui/card"
 
 export function SectionCards({
-  collegeCount,
-  programCount,
-  studentCount,
-  userCount,
   active,
 }: {
-  collegeCount: number
-  programCount: number
-  studentCount: number
-  userCount: number
   active?: "college" | "program" | "student" | "miscellaneous"
 }) {
+  const { counts } = useCounts()
   const activeClasses =
     "!shadow-xs !bg-gradient-to-br !from-primary/5 !to-primary/20"
 
-  // Use default fetcher from SWR provider (includes auth and error handling)
-  const { data: metrics } = useSWR("http://localhost:8080/api/metrics/daily")
+  const [metrics, setMetrics] = React.useState<any[] | null>(null)
+
+  React.useEffect(() => {
+    async function fetchMetrics() {
+      try {
+        const data = await fetcher("http://localhost:8080/api/metrics/daily")
+        setMetrics(data)
+      } catch (error) {
+        // Silently fail for metrics - not critical
+        console.warn("Failed to fetch metrics:", error)
+      }
+    }
+    fetchMetrics()
+  }, [])
 
   const last = metrics?.[metrics.length - 1]
   const prev = metrics?.[metrics.length - 2]
@@ -58,7 +64,7 @@ export function SectionCards({
         <CardHeader>
           <CardDescription>Total Colleges</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {collegeCount}
+            {counts.colleges}
           </CardTitle>
           <CardAction>
             <Link href="/colleges">
@@ -89,7 +95,7 @@ export function SectionCards({
         <CardHeader>
           <CardDescription>Total Programs</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {programCount}
+            {counts.programs}
           </CardTitle>
           <CardAction>
             <Link href="/programs">
@@ -120,7 +126,7 @@ export function SectionCards({
         <CardHeader>
           <CardDescription>Total Students</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {studentCount}
+            {counts.students}
           </CardTitle>
           <CardAction>
             <Link href="/students">
@@ -151,7 +157,7 @@ export function SectionCards({
         <CardHeader>
           <CardDescription>Total Site Visits</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {userCount}
+            {counts.users}
           </CardTitle>
           <CardAction>
             <Link href="/miscellaneous">
