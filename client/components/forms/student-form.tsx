@@ -28,29 +28,30 @@ export const studentSchema = z.object({
     .string()
     .min(1, { message: "ID number is required" })
     .regex(/^\d{4}-\d{4}$/, { message: "Format must be YYYY-NNNN" })
-    .refine((val) => {
-    const year = parseInt(val.slice(0, 4), 10)
-    return year >= 2015 && year <= currentYear
-  }, { message: `Year must be between 2015 and ${currentYear}` }),
+    .refine(
+      (val) => {
+        const year = parseInt(val.slice(0, 4), 10)
+        return year >= 2015 && year <= currentYear
+      },
+      { message: `Year must be between 2015 and ${currentYear}` }
+    ),
   firstName: z
     .string()
     .min(2, { message: "First name is required" })
     .max(50, { message: "First name must be at most 50 characters" })
-    .regex(/^[A-Za-z\s,-]+$/, { message: "First name must contain only letters and spaces" }),
+    .regex(/^[A-Za-z\s,-]+$/, {
+      message: "First name must contain only letters and spaces",
+    }),
   lastName: z
     .string()
     .min(2, { message: "Last name is required" })
     .max(50, { message: "Last name must be at most 50 characters" })
-    .regex(/^[A-Za-z\s,-]+$/, { message: "Last name must contain only letters and spaces" }),
-  course: z
-    .string()
-    .min(1, { message: "Course is required" }),
-  year: z
-    .string()
-    .min(1, { message: "Year is required" }),
-  gender: z
-    .string()
-    .min(1, { message: "Gender is required" }),
+    .regex(/^[A-Za-z\s,-]+$/, {
+      message: "Last name must contain only letters and spaces",
+    }),
+  course: z.string().min(1, { message: "Course is required" }),
+  year: z.string().min(1, { message: "Year is required" }),
+  gender: z.string().min(1, { message: "Gender is required" }),
 })
 
 export type StudentFormValues = z.infer<typeof studentSchema>
@@ -61,20 +62,38 @@ export function StudentForm({
   programs = [],
   onSuccess,
   onValidityChange,
-  defaultValues = { idNo: "", firstName: "", lastName: "", course: "", year: "", gender: "" },
+  defaultValues = {
+    idNo: "",
+    firstName: "",
+    lastName: "",
+    course: "",
+    year: "",
+    gender: "",
+  },
 }: {
   onSubmit: (values: StudentFormValues) => Promise<void>
   existingIds?: string[]
   programs: Array<{ code: string; name: string }>
   onSuccess?: () => void
   onValidityChange?: (isValid: boolean) => void
-  defaultValues?: { idNo: string; firstName: string; lastName: string; course: string; year: string; gender: string }
+  defaultValues?: {
+    idNo: string
+    firstName: string
+    lastName: string
+    course: string
+    year: string
+    gender: string
+  }
 }) {
   const schemaWithDuplicateCheck = studentSchema.extend({
-    idNo: studentSchema.shape.idNo.refine(
-      (val) => !existingIds.includes(val.toUpperCase()) || val.toUpperCase() === defaultValues.idNo.toUpperCase(),
-      { message: "This ID number already exists" }
-    ).transform((val) => val.toUpperCase()),
+    idNo: studentSchema.shape.idNo
+      .refine(
+        (val) =>
+          !existingIds.includes(val.toUpperCase()) ||
+          val.toUpperCase() === defaultValues.idNo.toUpperCase(),
+        { message: "This ID number already exists" }
+      )
+      .transform((val) => val.toUpperCase()),
   })
 
   const form = useForm<StudentFormValues>({
@@ -108,14 +127,19 @@ export function StudentForm({
   const filteredPrograms = React.useMemo(() => {
     const s = search.trim().toLowerCase()
     if (!s) return programs
-    return programs.filter((p) =>
-      p.name.toLowerCase().includes(s) || p.code.toLowerCase().includes(s)
+    return programs.filter(
+      (p) =>
+        p.name.toLowerCase().includes(s) || p.code.toLowerCase().includes(s)
     )
   }, [search, programs])
 
   return (
     <Form {...form}>
-      <form id="student-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        id="student-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
         <FormField
           control={form.control}
           name="idNo"
@@ -177,7 +201,8 @@ export function StudentForm({
                   </div>
                   {filteredPrograms.map((p) => (
                     <SelectItem key={p.code} value={p.code}>
-                      {p.name} <span className="text-muted-foreground">({p.code})</span>
+                      {p.name}{" "}
+                      <span className="text-muted-foreground">({p.code})</span>
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -21,12 +21,16 @@ export const collegeSchema = z.object({
     .string()
     .min(1, { message: "College code is required" })
     .max(10, { message: "College code must be at most 10 characters" })
-    .regex(/^[A-Za-z]+$/i, { message: "College code must contain only letters" }),
+    .regex(/^[A-Za-z]+$/i, {
+      message: "College code must contain only letters",
+    }),
   name: z
     .string()
     .min(2, { message: "College name is required" })
     .max(50, { message: "College name must be at most 50 characters" })
-    .regex(/^[A-Za-z\s,]+$/, { message: "College name must contain only letters and spaces" }),
+    .regex(/^[A-Za-z\s,]+$/, {
+      message: "College name must contain only letters and spaces",
+    }),
 })
 
 // inferred type from the schema
@@ -42,7 +46,7 @@ export function CollegeForm({
   onSuccess,
   onValidityChange,
   defaultValues = { code: "", name: "" },
-}: {  
+}: {
   onSubmit: (values: CollegeFormValues) => Promise<void>
   existingCodes?: string[]
   onSuccess?: () => void
@@ -53,17 +57,21 @@ export function CollegeForm({
   const schemaWithDuplicateCheck = collegeSchema.extend({
     // only the code will have extended validation
     // shape means i can pick any field, and code means im picking the code field
-    code: collegeSchema.shape.code.refine(
-      // checks if value is NOT in existingCodes (case insensitive)
-      // OR if it's the same as the current default value (for edit mode)
-      (val) => !existingCodes.includes(val.toUpperCase()) || val.toUpperCase() === defaultValues.code.toUpperCase(),
-      { message: "This college code already exists" }
-      // transform makes sure that the code is always stored in uppercase
-    ).transform((val) => val.toUpperCase()),
+    code: collegeSchema.shape.code
+      .refine(
+        // checks if value is NOT in existingCodes (case insensitive)
+        // OR if it's the same as the current default value (for edit mode)
+        (val) =>
+          !existingCodes.includes(val.toUpperCase()) ||
+          val.toUpperCase() === defaultValues.code.toUpperCase(),
+        { message: "This college code already exists" }
+        // transform makes sure that the code is always stored in uppercase
+      )
+      .transform((val) => val.toUpperCase()),
   })
 
   // useForm is a hook from react-hook-form
-  // CollegeFormValues is the type of the form data, meaning 
+  // CollegeFormValues is the type of the form data, meaning
   // it tells the form that the form will have code and name fields only
   const form = useForm<CollegeFormValues>({
     // zodResolver connects the zod schema to react-hook-form
@@ -106,7 +114,11 @@ export function CollegeForm({
 
   return (
     <Form {...form}>
-      <form id="college-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        id="college-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
         <FormField
           control={form.control}
           name="code"

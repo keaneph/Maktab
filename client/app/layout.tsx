@@ -1,25 +1,25 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { ActiveThemeProvider } from "@/components/active-theme";
-import { SwrProvider } from "@/components/swr-provider";
-import { Toaster } from "sonner";
-import { cookies } from "next/headers";
-import { cn } from "@/lib/utils";
+import type { Metadata } from "next"
+import "./globals.css"
+import { ThemeProvider } from "@/components/themes/theme-provider"
+import { ActiveThemeProvider } from "@/components/themes/active-theme"
+import { SwrProvider } from "@/components/swr-provider"
+import { Toaster } from "sonner"
+import { cookies } from "next/headers"
+import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: "Maktab",
   description: "A student information system for CCC181",
-};
+}
 
 export default async function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const cookieStore = await cookies();
-  const activeThemeValue = cookieStore.get("theme")?.value;
-  const isScaled = activeThemeValue?.endsWith("-scaled");
+  const cookieStore = await cookies()
+  const activeThemeValue = cookieStore.get("theme")?.value
+  const isScaled = activeThemeValue?.endsWith("-scaled")
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -46,5 +46,5 @@ export default async function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

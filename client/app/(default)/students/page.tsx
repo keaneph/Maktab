@@ -1,107 +1,111 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import useSWR, { mutate as globalMutate } from "swr";
-import { SiteHeader } from "@/components/site-header";
-import { Colleges } from "../colleges/columns";
-import { Programs } from "../programs/columns";
-import { Students, columns } from "./columns";
-import { Miscellaneous } from "../miscellaneous/columns";
-import { DataTable } from "@/components/data-table";
-import { SectionCards } from "@/components/section-cards";
-import { StudentForm } from "@/components/student-form";
-import { toast } from "sonner";
+import * as React from "react"
+import useSWR, { mutate as globalMutate } from "swr"
+import { authFetch } from "@/lib/api"
+import { SiteHeader } from "@/components/layout/site-header"
+import { Colleges } from "../colleges/columns"
+import { Programs } from "../programs/columns"
+import { Students, columns } from "./columns"
+import { Miscellaneous } from "../miscellaneous/columns"
+import { DataTable } from "@/components/data/data-table"
+import { SectionCards } from "@/components/data/section-cards"
+import { StudentForm } from "@/components/forms/student-form"
+import { toast } from "sonner"
 
 export default function StudentsPage() {
   const { data: collegeData = [], error: collegesErr } = useSWR<
     Colleges[],
     Error
-  >("http://localhost:8080/api/colleges/");
+  >("http://localhost:8080/api/colleges/")
   const { data: studentData = [], error: studentsErr } = useSWR<
     Students[],
     Error
-  >("http://localhost:8080/api/students/");
+  >("http://localhost:8080/api/students/")
   const { data: programData = [], error: programsErr } = useSWR<
     Programs[],
     Error
-  >("http://localhost:8080/api/programs/");
+  >("http://localhost:8080/api/programs/")
   const { data: userData = [], error: userErr } = useSWR<
     Miscellaneous[],
     Error
-  >("http://localhost:8080/api/users/");
+  >("http://localhost:8080/api/users/")
   React.useEffect(() => {
     if (collegesErr)
-      toast.error(`Error fetching colleges: ${collegesErr.message}`);
-  }, [collegesErr]);
+      toast.error(`Error fetching colleges: ${collegesErr.message}`)
+  }, [collegesErr])
   React.useEffect(() => {
     if (studentsErr)
-      toast.error(`Error fetching students: ${studentsErr.message}`);
-  }, [studentsErr]);
+      toast.error(`Error fetching students: ${studentsErr.message}`)
+  }, [studentsErr])
   React.useEffect(() => {
     if (programsErr)
-      toast.error(`Error fetching programs: ${programsErr.message}`);
-  }, [programsErr]);
+      toast.error(`Error fetching programs: ${programsErr.message}`)
+  }, [programsErr])
   React.useEffect(() => {
-    if (userErr) toast.error(`Error fetching users: ${userErr.message}`);
-  }, [userErr]);
+    if (userErr) toast.error(`Error fetching users: ${userErr.message}`)
+  }, [userErr])
 
   async function handleAdd(values: {
-    idNo: string;
-    firstName: string;
-    lastName: string;
-    course: string;
-    year: string;
-    gender: string;
+    idNo: string
+    firstName: string
+    lastName: string
+    course: string
+    year: string
+    gender: string
   }) {
-    const newItem: Students = { ...values, year: parseInt(values.year) };
+    const newItem: Students = { ...values, year: parseInt(values.year) }
     await globalMutate(
       "http://localhost:8080/api/students/",
       async (current: Students[] = []) => {
-        const res = await fetch("http://localhost:8080/api/students/", {
+        const res = await authFetch("http://localhost:8080/api/students/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ ...newItem }),
-        });
-        const created = await res.json();
-        return [...current, created];
+        })
+        const created = await res.json()
+        return [...current, created]
       },
       {
         revalidate: false,
         optimisticData: (current?: Students[]) => [...(current ?? []), newItem],
         rollbackOnError: true,
       }
-    );
-    toast.success("Student added successfully!");
+    )
+    toast.success("Student added successfully!")
   }
 
   async function handleEdit(
     oldId: string,
     data: {
-      idNo: string;
-      firstName: string;
-      lastName: string;
-      course: string;
-      year: string;
-      gender: string;
+      idNo: string
+      firstName: string
+      lastName: string
+      course: string
+      year: string
+      gender: string
     }
   ) {
     const payload = {
       ...data,
       year: parseInt(data.year),
-    };
+    }
     await globalMutate(
       "http://localhost:8080/api/students/",
       async (current: Students[] = []) => {
-        const res = await fetch(`http://localhost:8080/api/students/${oldId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error("Failed to update student");
-        const updated = await res.json();
-        return current.map((s: Students) => (s.idNo === oldId ? updated : s));
+        const res = await authFetch(
+          `http://localhost:8080/api/students/${oldId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(payload),
+          }
+        )
+        if (!res.ok) throw new Error("Failed to update student")
+        const updated = await res.json()
+        return current.map((s: Students) => (s.idNo === oldId ? updated : s))
       },
       {
         revalidate: false,
@@ -111,21 +115,24 @@ export default function StudentsPage() {
           ),
         rollbackOnError: true,
       }
-    );
-    toast.success("Student updated successfully!");
+    )
+    toast.success("Student updated successfully!")
   }
 
   async function handleDelete(id_no: string) {
     await globalMutate(
       "http://localhost:8080/api/students/",
       async (current: Students[] = []) => {
-        const res = await fetch(`http://localhost:8080/api/students/${id_no}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("Failed to delete student");
-        await res.json();
-        return current.filter((s: Students) => s.idNo !== id_no);
+        const res = await authFetch(
+          `http://localhost:8080/api/students/${id_no}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        )
+        if (!res.ok) throw new Error("Failed to delete student")
+        await res.json()
+        return current.filter((s: Students) => s.idNo !== id_no)
       },
       {
         revalidate: false,
@@ -133,24 +140,24 @@ export default function StudentsPage() {
           (current ?? []).filter((s: Students) => s.idNo !== id_no),
         rollbackOnError: true,
       }
-    );
-    toast.success("Student deleted successfully!");
+    )
+    toast.success("Student deleted successfully!")
   }
 
   async function handleBulkDelete(ids: string[]) {
-    const setIds = new Set(ids);
+    const setIds = new Set(ids)
     await globalMutate(
       "http://localhost:8080/api/students/",
       async (current: Students[] = []) => {
         await Promise.all(
           ids.map((id) =>
-            fetch(`http://localhost:8080/api/students/${id}`, {
+            authFetch(`http://localhost:8080/api/students/${id}`, {
               method: "DELETE",
               credentials: "include",
             })
           )
-        );
-        return current.filter((s: Students) => !setIds.has(s.idNo));
+        )
+        return current.filter((s: Students) => !setIds.has(s.idNo))
       },
       {
         revalidate: false,
@@ -158,8 +165,8 @@ export default function StudentsPage() {
           (current ?? []).filter((s: Students) => !setIds.has(s.idNo)),
         rollbackOnError: true,
       }
-    );
-    toast.success(`${ids.length} student(s) deleted successfully!`);
+    )
+    toast.success(`${ids.length} student(s) deleted successfully!`)
   }
 
   return (
@@ -223,5 +230,5 @@ export default function StudentsPage() {
         </div>
       </div>
     </>
-  );
+  )
 }

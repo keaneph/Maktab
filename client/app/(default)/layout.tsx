@@ -1,15 +1,15 @@
 // app/(default)/layout.tsx
-import { AppSidebar } from "@/components/app-sidebar";
-import { cookies } from "next/headers";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { cookies } from "next/headers"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 export default async function DefaultLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+  const cookieStore = await cookies()
+  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
 
   return (
     <SidebarProvider
@@ -30,5 +30,5 @@ export default async function DefaultLayout({
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }

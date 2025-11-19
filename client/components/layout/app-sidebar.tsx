@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import Link from "next/link";
+import Link from "next/link"
 
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation"
 
 import {
   TreePalm,
@@ -11,7 +11,7 @@ import {
   GraduationCap,
   User,
   Settings,
-} from "lucide-react";
+} from "lucide-react"
 
 import {
   Sidebar,
@@ -23,8 +23,8 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarFooter,
-} from "@/components/ui/sidebar";
-import { NavUser } from "./nav-user";
+} from "@/components/ui/sidebar"
+import { NavUser } from "../nav-user"
 
 const items = [
   {
@@ -52,10 +52,10 @@ const items = [
     url: "/miscellaneous",
     icon: Settings,
   },
-];
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -79,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent className="flex flex-col gap-2">
             <SidebarMenu>
               {items.map((item) => {
-                const isActive = pathname.startsWith(item.url); // highlight current
+                const isActive = pathname.startsWith(item.url) // highlight current
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive}>
@@ -89,21 +89,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                );
+                )
               })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
-          user={{
-            name: "User Name",
-            email: "user@example.com",
-            avatar: "path/to/avatar.jpg",
-          }}
-        />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

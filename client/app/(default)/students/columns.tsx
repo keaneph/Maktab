@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { ColumnDef, Table } from "@tanstack/react-table";
-import { ArrowUpDown, MoreVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import * as React from "react";
+import { ColumnDef, Table } from "@tanstack/react-table"
+import { ArrowUpDown, MoreVertical } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import * as React from "react"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 
 import {
   DropdownMenu,
@@ -22,17 +22,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { StudentForm } from "@/components/student-form";
+} from "@/components/ui/dropdown-menu"
+import { StudentForm } from "@/components/forms/student-form"
 
 export type Students = {
-  idNo: string;
-  firstName: string;
-  lastName: string;
-  course: string;
-  year: number;
-  gender: string;
-};
+  idNo: string
+  firstName: string
+  lastName: string
+  course: string
+  year: number
+  gender: string
+}
 
 // local component for confirming deletion
 function DeleteDialog({
@@ -41,10 +41,10 @@ function DeleteDialog({
   onConfirm,
   studentName,
 }: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  studentName: string;
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  studentName: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -71,8 +71,8 @@ function DeleteDialog({
             variant="destructive"
             className="cursor-pointer"
             onClick={() => {
-              onConfirm();
-              onClose();
+              onConfirm()
+              onClose()
             }}
           >
             Delete
@@ -80,7 +80,7 @@ function DeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // local component for editing student
@@ -92,33 +92,33 @@ function EditDialog({
   programs,
   existingIds = [],
 }: {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
   onConfirm: (data: {
-    idNo: string;
-    firstName: string;
-    lastName: string;
-    course: string;
-    year: string;
-    gender: string;
-  }) => void;
-  student: Students;
-  programs: Array<{ code: string; name: string }>;
-  existingIds?: string[];
+    idNo: string
+    firstName: string
+    lastName: string
+    course: string
+    year: string
+    gender: string
+  }) => void
+  student: Students
+  programs: Array<{ code: string; name: string }>
+  existingIds?: string[]
 }) {
-  const [isFormValid, setIsFormValid] = React.useState(false);
+  const [isFormValid, setIsFormValid] = React.useState(false)
 
   async function handleSubmit(values: {
-    idNo: string;
-    firstName: string;
-    lastName: string;
-    course: string;
-    year: string;
-    gender: string;
+    idNo: string
+    firstName: string
+    lastName: string
+    course: string
+    year: string
+    gender: string
   }) {
     try {
-      await onConfirm(values);
-      onClose();
+      await onConfirm(values)
+      onClose()
     } catch {
       // Error handling is done in the parent component
     }
@@ -167,7 +167,7 @@ function EditDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // component for rendering dropdown + dialog safely with useState
@@ -179,11 +179,11 @@ function BulkDeleteDialog({
   count,
   noun,
 }: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  count: number;
-  noun: string;
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  count: number
+  noun: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -209,8 +209,8 @@ function BulkDeleteDialog({
             variant="destructive"
             className="cursor-pointer"
             onClick={() => {
-              onConfirm();
-              onClose();
+              onConfirm()
+              onClose()
             }}
           >
             Delete
@@ -218,7 +218,7 @@ function BulkDeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 function ActionsCell({
@@ -230,28 +230,28 @@ function ActionsCell({
   onBulkDelete,
   table,
 }: {
-  student: Students;
-  onDelete?: (idNo: string) => void;
+  student: Students
+  onDelete?: (idNo: string) => void
   onEdit?: (
     oldId: string,
     data: {
-      idNo: string;
-      firstName: string;
-      lastName: string;
-      course: string;
-      year: string;
-      gender: string;
+      idNo: string
+      firstName: string
+      lastName: string
+      course: string
+      year: string
+      gender: string
     }
-  ) => void;
-  programs: Array<{ code: string; name: string }>;
-  existingIds?: string[];
-  onBulkDelete?: (ids: string[]) => void;
-  table: Table<Students>;
+  ) => void
+  programs: Array<{ code: string; name: string }>
+  existingIds?: string[]
+  onBulkDelete?: (ids: string[]) => void
+  table: Table<Students>
 }) {
-  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
-  const [isEditOpen, setIsEditOpen] = React.useState(false);
-  const [isBulkOpen, setIsBulkOpen] = React.useState(false);
-  const [pendingIds, setPendingIds] = React.useState<string[]>([]);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
+  const [isEditOpen, setIsEditOpen] = React.useState(false)
+  const [isBulkOpen, setIsBulkOpen] = React.useState(false)
+  const [pendingIds, setPendingIds] = React.useState<string[]>([])
 
   return (
     <>
@@ -275,13 +275,13 @@ function ActionsCell({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
-              const selected = table.getFilteredSelectedRowModel().rows;
+              const selected = table.getFilteredSelectedRowModel().rows
               if (selected.length > 0) {
-                const ids = selected.map((r) => r.original.idNo);
-                setPendingIds(ids);
-                setIsBulkOpen(true);
+                const ids = selected.map((r) => r.original.idNo)
+                setPendingIds(ids)
+                setIsBulkOpen(true)
               } else {
-                setIsDeleteOpen(true);
+                setIsDeleteOpen(true)
               }
             }}
           >
@@ -297,8 +297,8 @@ function ActionsCell({
         programs={programs}
         existingIds={existingIds}
         onConfirm={(data) => {
-          onEdit?.(student.idNo, data);
-          setIsEditOpen(false);
+          onEdit?.(student.idNo, data)
+          setIsEditOpen(false)
         }}
       />
 
@@ -314,18 +314,18 @@ function ActionsCell({
         count={pendingIds.length}
         noun="Students"
         onConfirm={async () => {
-          if (pendingIds.length === 0) return;
+          if (pendingIds.length === 0) return
           if (onBulkDelete) {
-            await onBulkDelete(pendingIds);
+            await onBulkDelete(pendingIds)
           } else {
-            await Promise.all(pendingIds.map((i) => onDelete?.(i)));
+            await Promise.all(pendingIds.map((i) => onDelete?.(i)))
           }
-          table.resetRowSelection();
-          setPendingIds([]);
+          table.resetRowSelection()
+          setPendingIds([])
         }}
       />
     </>
-  );
+  )
 }
 
 // main column definition
@@ -334,12 +334,12 @@ export const columns = (
   onEdit?: (
     oldId: string,
     data: {
-      idNo: string;
-      firstName: string;
-      lastName: string;
-      course: string;
-      year: string;
-      gender: string;
+      idNo: string
+      firstName: string
+      lastName: string
+      course: string
+      year: string
+      gender: string
     }
   ) => void,
   programs: Array<{ code: string; name: string }> = [],
@@ -377,7 +377,7 @@ export const columns = (
           ID Number
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -391,7 +391,7 @@ export const columns = (
           First Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -405,7 +405,7 @@ export const columns = (
           Last Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -419,7 +419,7 @@ export const columns = (
           Course
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -433,7 +433,7 @@ export const columns = (
           Year
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -447,7 +447,7 @@ export const columns = (
           Gender
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -465,4 +465,4 @@ export const columns = (
       />
     ),
   },
-];
+]

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ModeToggle } from "@/components/ui/mode-toggle"
-import { ThemeSelector } from "./theme-selector"
+import { ThemeSelector } from "../themes/theme-selector"
 
 interface SiteHeaderProps {
   title: string
@@ -19,7 +19,12 @@ export function SiteHeader({ title }: SiteHeaderProps) {
         />
         <h1 className="text-base font-medium">{title}</h1>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
+          <Button
+            variant="ghost"
+            asChild
+            size="sm"
+            className="cus hidden sm:flex"
+          >
             <a
               href="https://github.com/keaneph/Maktab"
               rel="noopener noreferrer"

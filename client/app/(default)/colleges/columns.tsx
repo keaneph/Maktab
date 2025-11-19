@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { ColumnDef, Table } from "@tanstack/react-table";
-import { ArrowUpDown, MoreVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import * as React from "react";
+import { ColumnDef, Table } from "@tanstack/react-table"
+import { ArrowUpDown, MoreVertical } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import * as React from "react"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 
 import {
   DropdownMenu,
@@ -22,14 +22,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CollegeForm } from "@/components/college-form";
+} from "@/components/ui/dropdown-menu"
+import { CollegeForm } from "@/components/forms/college-form"
 
 // type definition
 export type Colleges = {
-  code: string;
-  name: string;
-};
+  code: string
+  name: string
+}
 
 // local component for confirming deletion
 function DeleteDialog({
@@ -38,10 +38,10 @@ function DeleteDialog({
   onConfirm,
   collegeName,
 }: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  collegeName: string;
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  collegeName: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -68,8 +68,8 @@ function DeleteDialog({
             variant="destructive"
             className="cursor-pointer"
             onClick={() => {
-              onConfirm();
-              onClose();
+              onConfirm()
+              onClose()
             }}
           >
             Delete
@@ -77,7 +77,7 @@ function DeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // local component for editing college
@@ -88,18 +88,18 @@ function EditDialog({
   college,
   existingCodes = [],
 }: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: (data: { code: string; name: string }) => void;
-  college: Colleges;
-  existingCodes?: string[];
+  open: boolean
+  onClose: () => void
+  onConfirm: (data: { code: string; name: string }) => void
+  college: Colleges
+  existingCodes?: string[]
 }) {
-  const [isFormValid, setIsFormValid] = React.useState(false);
+  const [isFormValid, setIsFormValid] = React.useState(false)
 
   async function handleSubmit(values: { code: string; name: string }) {
     try {
-      await onConfirm(values);
-      onClose();
+      await onConfirm(values)
+      onClose()
     } catch {
       // Error handling is done in the parent component
     }
@@ -140,7 +140,7 @@ function EditDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // component for rendering dropdown + dialog safely with useState
@@ -152,11 +152,11 @@ function BulkDeleteDialog({
   count,
   noun,
 }: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  count: number;
-  noun: string;
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  count: number
+  noun: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -182,8 +182,8 @@ function BulkDeleteDialog({
             variant="destructive"
             className="cursor-pointer"
             onClick={() => {
-              onConfirm();
-              onClose();
+              onConfirm()
+              onClose()
             }}
           >
             Delete
@@ -191,7 +191,7 @@ function BulkDeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 function ActionsCell({
@@ -202,17 +202,17 @@ function ActionsCell({
   existingCodes = [],
   table,
 }: {
-  college: Colleges;
-  onDelete?: (code: string) => void;
-  onEdit?: (code: string, data: { code: string; name: string }) => void;
-  onBulkDelete?: (codes: string[]) => void;
-  existingCodes?: string[];
-  table: Table<Colleges>;
+  college: Colleges
+  onDelete?: (code: string) => void
+  onEdit?: (code: string, data: { code: string; name: string }) => void
+  onBulkDelete?: (codes: string[]) => void
+  existingCodes?: string[]
+  table: Table<Colleges>
 }) {
-  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
-  const [isEditOpen, setIsEditOpen] = React.useState(false);
-  const [isBulkOpen, setIsBulkOpen] = React.useState(false);
-  const [pendingCodes, setPendingCodes] = React.useState<string[]>([]);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
+  const [isEditOpen, setIsEditOpen] = React.useState(false)
+  const [isBulkOpen, setIsBulkOpen] = React.useState(false)
+  const [pendingCodes, setPendingCodes] = React.useState<string[]>([])
 
   return (
     <>
@@ -236,13 +236,13 @@ function ActionsCell({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
-              const selected = table.getFilteredSelectedRowModel().rows;
+              const selected = table.getFilteredSelectedRowModel().rows
               if (selected.length > 0) {
-                const codes = selected.map((r) => r.original.code);
-                setPendingCodes(codes);
-                setIsBulkOpen(true);
+                const codes = selected.map((r) => r.original.code)
+                setPendingCodes(codes)
+                setIsBulkOpen(true)
               } else {
-                setIsDeleteOpen(true);
+                setIsDeleteOpen(true)
               }
             }}
           >
@@ -257,8 +257,8 @@ function ActionsCell({
         college={college}
         existingCodes={existingCodes}
         onConfirm={(data) => {
-          onEdit?.(college.code, data);
-          setIsEditOpen(false);
+          onEdit?.(college.code, data)
+          setIsEditOpen(false)
         }}
       />
 
@@ -274,18 +274,18 @@ function ActionsCell({
         count={pendingCodes.length}
         noun="Colleges"
         onConfirm={async () => {
-          if (pendingCodes.length === 0) return;
+          if (pendingCodes.length === 0) return
           if (onBulkDelete) {
-            await onBulkDelete(pendingCodes);
+            await onBulkDelete(pendingCodes)
           } else {
-            await Promise.all(pendingCodes.map((c) => onDelete?.(c)));
+            await Promise.all(pendingCodes.map((c) => onDelete?.(c)))
           }
-          table.resetRowSelection();
-          setPendingCodes([]);
+          table.resetRowSelection()
+          setPendingCodes([])
         }}
       />
     </>
-  );
+  )
 }
 
 // main column definition
@@ -355,4 +355,4 @@ export const columns = (
       />
     ),
   },
-];
+]

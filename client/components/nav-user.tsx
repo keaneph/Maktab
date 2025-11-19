@@ -1,5 +1,6 @@
-"use client";
+"use client"
 
+import { useEffect, useState } from "react"
 import {
   BadgeCheck,
   Bell,
@@ -7,47 +8,68 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { LogoutButton } from "./logout-button";
-import { createClient } from "@/lib/client";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+} from "@/components/ui/sidebar"
+import { createClient } from "@/lib/client"
+import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
+import { clearTokenCache } from "@/lib/api"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) {
-  const { isMobile } = useSidebar();
+export function NavUser() {
+  const { isMobile } = useSidebar()
+  const router = useRouter()
+
+  const [userInfo, setUserInfo] = useState({
+    email: "",
+    avatar: "",
+  })
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const supabase = createClient()
+      const { data } = await supabase.auth.getClaims()
+
+      // Claims structure example:
+      // data.claims.email
+      // data.claims.user_metadata.full_name
+      // data.claims.user_metadata.avatar_url
+
+      if (data?.claims) {
+        setUserInfo({
+          email: data.claims.email || "",
+          avatar: data.claims.user_metadata?.avatar_url || "",
+        })
+      }
+    }
+
+    loadUser()
+  }, [])
+
   const avatarSrc =
-    user.avatar && user.avatar.trim().length > 0 ? user.avatar : "/ent.jpg";
-  const router = useRouter();
+    userInfo.avatar && userInfo.avatar.trim().length > 0
+      ? userInfo.avatar
+      : "/ent.jpg"
 
   const logout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/auth/login");
-  };
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    clearTokenCache()
+    router.push("/auth/login")
+  }
 
   return (
     <SidebarMenu>
@@ -56,15 +78,14 @@ export function NavUser({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={avatarSrc} alt={user.name} />
+                <AvatarImage src={avatarSrc} />
                 <AvatarFallback className="rounded-lg">MT</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate text-xs">{userInfo.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -78,26 +99,25 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={avatarSrc} alt={user.name} />
+                  <AvatarImage src={avatarSrc} />
                   <AvatarFallback className="rounded-lg">MT</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate text-xs">{userInfo.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               className="cursor-pointer"
-              onSelect={(e) => {
-                e.preventDefault();
-              }}
+              onSelect={(e) => e.preventDefault()}
             >
               <LogOut />
               <Button
                 variant="ghost"
-                className="m-0 p-0 font-normal cursor-pointer"
+                className="m-0 cursor-pointer p-0 font-normal"
                 onClick={logout}
               >
                 Logout
@@ -107,5 +127,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
+  )
 }

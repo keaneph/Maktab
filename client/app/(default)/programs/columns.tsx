@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { ColumnDef, Table } from "@tanstack/react-table";
-import { ArrowUpDown, MoreVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import * as React from "react";
+import { ColumnDef, Table } from "@tanstack/react-table"
+import { ArrowUpDown, MoreVertical } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import * as React from "react"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 
 import {
   DropdownMenu,
@@ -22,14 +22,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ProgramForm } from "@/components/program-form";
+} from "@/components/ui/dropdown-menu"
+import { ProgramForm } from "@/components/forms/program-form"
 
 export type Programs = {
-  code: string;
-  name: string;
-  college_code: string;
-};
+  code: string
+  name: string
+  college_code: string
+}
 
 function DeleteDialog({
   open,
@@ -37,10 +37,10 @@ function DeleteDialog({
   onConfirm,
   programName,
 }: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  programName: string;
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  programName: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -67,8 +67,8 @@ function DeleteDialog({
             variant="destructive"
             className="cursor-pointer"
             onClick={() => {
-              onConfirm();
-              onClose();
+              onConfirm()
+              onClose()
             }}
           >
             Delete
@@ -76,7 +76,7 @@ function DeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // local component for editing program
@@ -88,27 +88,27 @@ function EditDialog({
   colleges,
   existingCodes = [],
 }: {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
   onConfirm: (data: {
-    code: string;
-    name: string;
-    college_code: string;
-  }) => void;
-  program: Programs;
-  colleges: Array<{ code: string; name: string }>;
-  existingCodes?: string[];
+    code: string
+    name: string
+    college_code: string
+  }) => void
+  program: Programs
+  colleges: Array<{ code: string; name: string }>
+  existingCodes?: string[]
 }) {
-  const [isFormValid, setIsFormValid] = React.useState(false);
+  const [isFormValid, setIsFormValid] = React.useState(false)
 
   async function handleSubmit(values: {
-    code: string;
-    name: string;
-    college_code: string;
+    code: string
+    name: string
+    college_code: string
   }) {
     try {
-      await onConfirm(values);
-      onClose();
+      await onConfirm(values)
+      onClose()
     } catch {
       // Error handling is done in the parent component
     }
@@ -154,7 +154,7 @@ function EditDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // bulk confirmation dialog
@@ -165,11 +165,11 @@ function BulkDeleteDialog({
   count,
   noun,
 }: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  count: number;
-  noun: string;
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  count: number
+  noun: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -195,8 +195,8 @@ function BulkDeleteDialog({
             variant="destructive"
             className="cursor-pointer"
             onClick={() => {
-              onConfirm();
-              onClose();
+              onConfirm()
+              onClose()
             }}
           >
             Delete
@@ -204,7 +204,7 @@ function BulkDeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 function ActionsCell({
@@ -216,21 +216,21 @@ function ActionsCell({
   onBulkDelete,
   table,
 }: {
-  program: Programs;
-  onDelete?: (code: string) => void;
+  program: Programs
+  onDelete?: (code: string) => void
   onEdit?: (
     oldCode: string,
     data: { code: string; name: string; college_code: string }
-  ) => void;
-  colleges: Array<{ code: string; name: string }>;
-  existingCodes?: string[];
-  onBulkDelete?: (codes: string[]) => void;
-  table: Table<Programs>;
+  ) => void
+  colleges: Array<{ code: string; name: string }>
+  existingCodes?: string[]
+  onBulkDelete?: (codes: string[]) => void
+  table: Table<Programs>
 }) {
-  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
-  const [isEditOpen, setIsEditOpen] = React.useState(false);
-  const [isBulkOpen, setIsBulkOpen] = React.useState(false);
-  const [pendingCodes, setPendingCodes] = React.useState<string[]>([]);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
+  const [isEditOpen, setIsEditOpen] = React.useState(false)
+  const [isBulkOpen, setIsBulkOpen] = React.useState(false)
+  const [pendingCodes, setPendingCodes] = React.useState<string[]>([])
   return (
     <>
       <DropdownMenu>
@@ -253,13 +253,13 @@ function ActionsCell({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
-              const selected = table.getFilteredSelectedRowModel().rows;
+              const selected = table.getFilteredSelectedRowModel().rows
               if (selected.length > 0) {
-                const codes = selected.map((r) => r.original.code);
-                setPendingCodes(codes);
-                setIsBulkOpen(true);
+                const codes = selected.map((r) => r.original.code)
+                setPendingCodes(codes)
+                setIsBulkOpen(true)
               } else {
-                setIsDeleteOpen(true);
+                setIsDeleteOpen(true)
               }
             }}
           >
@@ -275,8 +275,8 @@ function ActionsCell({
         colleges={colleges}
         existingCodes={existingCodes}
         onConfirm={(data) => {
-          onEdit?.(program.code, data);
-          setIsEditOpen(false);
+          onEdit?.(program.code, data)
+          setIsEditOpen(false)
         }}
       />
       <DeleteDialog
@@ -291,18 +291,18 @@ function ActionsCell({
         count={pendingCodes.length}
         noun="Programs"
         onConfirm={async () => {
-          if (pendingCodes.length === 0) return;
+          if (pendingCodes.length === 0) return
           if (onBulkDelete) {
-            await onBulkDelete(pendingCodes);
+            await onBulkDelete(pendingCodes)
           } else {
-            await Promise.all(pendingCodes.map((c) => onDelete?.(c)));
+            await Promise.all(pendingCodes.map((c) => onDelete?.(c)))
           }
-          table.resetRowSelection();
-          setPendingCodes([]);
+          table.resetRowSelection()
+          setPendingCodes([])
         }}
       />
     </>
-  );
+  )
 }
 
 export const columns = (
@@ -346,7 +346,7 @@ export const columns = (
           Code
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -360,7 +360,7 @@ export const columns = (
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -374,7 +374,7 @@ export const columns = (
           College Code
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
@@ -392,4 +392,4 @@ export const columns = (
       />
     ),
   },
-];
+]

@@ -2,29 +2,45 @@
 
 import * as React from "react"
 import useSWR, { mutate as globalMutate } from "swr"
+import { authFetch } from "@/lib/api"
 import { toast } from "sonner"
-import { SiteHeader } from "@/components/site-header";
-import { columns, Miscellaneous } from "./columns";
-import { DataTable } from "@/components/data-table";
+import { SiteHeader } from "@/components/layout/site-header"
+import { columns, Miscellaneous } from "./columns"
+import { DataTable } from "@/components/data/data-table"
 import { Colleges } from "../colleges/columns"
 import { Programs } from "../programs/columns"
 import { Students } from "../students/columns"
-import { SectionCards } from "@/components/section-cards";
+import { SectionCards } from "@/components/data/section-cards"
 
 export default function MiscellaneousPage() {
-  const { data: collegeData = [], error: collegesErr } = useSWR<Colleges[], Error>("http://localhost:8080/api/colleges/")
-  const { data: programData = [], error: programsErr } = useSWR<Programs[], Error>("http://localhost:8080/api/programs/")
-  const { data: studentData = [], error: studentsErr } = useSWR<Students[], Error>("http://localhost:8080/api/students/")
-  const { data: userData = [], error: userErr } = useSWR<Miscellaneous[], Error>("http://localhost:8080/api/users/")
-  
+  const { data: collegeData = [], error: collegesErr } = useSWR<
+    Colleges[],
+    Error
+  >("http://localhost:8080/api/colleges/")
+  const { data: programData = [], error: programsErr } = useSWR<
+    Programs[],
+    Error
+  >("http://localhost:8080/api/programs/")
+  const { data: studentData = [], error: studentsErr } = useSWR<
+    Students[],
+    Error
+  >("http://localhost:8080/api/students/")
+  const { data: userData = [], error: userErr } = useSWR<
+    Miscellaneous[],
+    Error
+  >("http://localhost:8080/api/users/")
+
   React.useEffect(() => {
-    if (collegesErr) toast.error(`Error fetching colleges: ${collegesErr.message}`)
+    if (collegesErr)
+      toast.error(`Error fetching colleges: ${collegesErr.message}`)
   }, [collegesErr])
   React.useEffect(() => {
-    if (programsErr) toast.error(`Error fetching programs: ${programsErr.message}`)
+    if (programsErr)
+      toast.error(`Error fetching programs: ${programsErr.message}`)
   }, [programsErr])
   React.useEffect(() => {
-    if (studentsErr) toast.error(`Error fetching students: ${studentsErr.message}`)
+    if (studentsErr)
+      toast.error(`Error fetching students: ${studentsErr.message}`)
   }, [studentsErr])
   React.useEffect(() => {
     if (userErr) toast.error(`Error fetching users: ${userErr.message}`)
@@ -34,14 +50,18 @@ export default function MiscellaneousPage() {
     await globalMutate(
       "http://localhost:8080/api/users/",
       async (current: Miscellaneous[] = []) => {
-        const res = await fetch(`http://localhost:8080/api/users/${username}`, { method: "DELETE", credentials: "include" })
+        const res = await authFetch(
+          `http://localhost:8080/api/users/${username}`,
+          { method: "DELETE" }
+        )
         if (!res.ok) throw new Error("Failed to delete user")
         await res.json()
         return current.filter((u: Miscellaneous) => u.username !== username)
       },
       {
         revalidate: false,
-        optimisticData: (current?: Miscellaneous[]) => (current ?? []).filter((u: Miscellaneous) => u.username !== username),
+        optimisticData: (current?: Miscellaneous[]) =>
+          (current ?? []).filter((u: Miscellaneous) => u.username !== username),
         rollbackOnError: true,
       }
     )
@@ -55,12 +75,21 @@ export default function MiscellaneousPage() {
       async (current: Miscellaneous[] = []) => {
         await Promise.all(
           usernames.map((u) =>
-            fetch(`http://localhost:8080/api/users/${u}`, { method: "DELETE", credentials: "include" })
+            authFetch(`http://localhost:8080/api/users/${u}`, {
+              method: "DELETE",
+            })
           )
         )
         return current.filter((u: Miscellaneous) => !setUsers.has(u.username))
       },
-      { revalidate: false, optimisticData: (current?: Miscellaneous[]) => (current ?? []).filter((u: Miscellaneous) => !setUsers.has(u.username)), rollbackOnError: true }
+      {
+        revalidate: false,
+        optimisticData: (current?: Miscellaneous[]) =>
+          (current ?? []).filter(
+            (u: Miscellaneous) => !setUsers.has(u.username)
+          ),
+        rollbackOnError: true,
+      }
     )
     toast.success(`${usernames.length} user(s) deleted successfully`)
   }
@@ -87,5 +116,5 @@ export default function MiscellaneousPage() {
         </div>
       </div>
     </>
-  );
+  )
 }

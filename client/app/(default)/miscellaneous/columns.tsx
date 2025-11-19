@@ -48,12 +48,19 @@ function DeleteDialog({
         <DialogHeader>
           <DialogTitle>Delete User</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <b>{username}</b>? This action cannot be undone.
+            Are you sure you want to delete <b>{username}</b>? This action
+            cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex justify-end gap-2">
           <DialogClose asChild>
-            <Button variant="outline" className="cursor-pointer" onClick={onClose}>Cancel</Button>
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={onClose}
+            >
+              Cancel
+            </Button>
           </DialogClose>
           <Button
             variant="destructive"
@@ -92,12 +99,19 @@ function BulkDeleteDialog({
         <DialogHeader>
           <DialogTitle>Delete {noun}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete {count} {noun.toLowerCase()}? This action cannot be undone.
+            Are you sure you want to delete {count} {noun.toLowerCase()}? This
+            action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex justify-end gap-2">
           <DialogClose asChild>
-            <Button variant="outline" className="cursor-pointer" onClick={onClose}>Cancel</Button>
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={onClose}
+            >
+              Cancel
+            </Button>
           </DialogClose>
           <Button
             variant="destructive"
@@ -140,7 +154,9 @@ function ActionsCell({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.email)}>
+          <DropdownMenuItem
+            onClick={() => navigator.clipboard.writeText(user.email)}
+          >
             Copy user email
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -190,9 +206,9 @@ function ActionsCell({
 // main column definition
 export const columns = (
   onDelete?: (username: string) => void,
-  onBulkDelete?: (usernames: string[]) => void,
+  onBulkDelete?: (usernames: string[]) => void
 ): ColumnDef<Miscellaneous>[] => [
-    {
+  {
     id: "select",
     header: ({ table }) => (
       <Checkbox
@@ -259,7 +275,12 @@ export const columns = (
     header: "Actions",
     id: "actions",
     cell: ({ row, table }) => (
-      <ActionsCell user={row.original} onDelete={onDelete} onBulkDelete={onBulkDelete} table={table} />
+      <ActionsCell
+        user={row.original}
+        onDelete={onDelete}
+        onBulkDelete={onBulkDelete}
+        table={table}
+      />
     ),
   },
 ]

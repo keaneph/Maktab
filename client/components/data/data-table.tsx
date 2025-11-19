@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import * as React from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,7 +10,7 @@ import {
   ChevronsRight,
   Plus,
   Search,
-} from "lucide-react";
+} from "lucide-react"
 import {
   ColumnDef,
   SortingState,
@@ -20,14 +20,14 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -35,7 +35,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 import {
   Dialog,
   DialogClose,
@@ -45,31 +45,31 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 
 interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
   /** placeholder text for search input */
-  searchPlaceholder?: string;
+  searchPlaceholder?: string
   /** dialog title (e.g. "Add College") */
-  addTitle?: string;
+  addTitle?: string
   /** dialog description */
-  addDescription?: string;
+  addDescription?: string
   /** hide the add button and dialog entirely */
-  hideAddButton?: boolean;
+  hideAddButton?: boolean
   /** custom form fields for the dialog */
   renderAddForm?: (props: {
-    onSuccess: () => void;
-    onValidityChange: (isValid: boolean) => void;
-  }) => React.ReactNode;
+    onSuccess: () => void
+    onValidityChange: (isValid: boolean) => void
+  }) => React.ReactNode
   /** id of the form element inside add dialog; used by submit button */
-  addFormId?: string;
+  addFormId?: string
   /** keys in row to search through */
-  searchKeys?: string[];
+  searchKeys?: string[]
   // omissible function to handle form submission
-  onAdd?: (formData: TFormData) => void;
-  onDelete?: (code: string) => Promise<void> | void;
+  onAdd?: (formData: TFormData) => void
+  onDelete?: (code: string) => Promise<void> | void
 }
 
 export function DataTable<TData, TValue, TFormData = Partial<TData>>({
@@ -83,11 +83,11 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
   addFormId = "college-form",
   searchKeys = [],
 }: DataTableProps<TData, TValue, TFormData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = React.useState("");
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [isFormValid, setIsFormValid] = React.useState(false);
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [globalFilter, setGlobalFilter] = React.useState("")
+  const [rowSelection, setRowSelection] = React.useState({})
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+  const [isFormValid, setIsFormValid] = React.useState(false)
 
   const table = useReactTable({
     data,
@@ -105,26 +105,26 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
     onGlobalFilterChange: setGlobalFilter,
     onRowSelectionChange: setRowSelection,
     globalFilterFn: (row, _columnId, filterValue) => {
-      const search = filterValue.toLowerCase();
+      const search = filterValue.toLowerCase()
       return searchKeys.some((key) => {
-        const val = (row.getValue(key) as string) ?? "";
-        return val.toString().toLowerCase().includes(search);
-      });
+        const val = (row.getValue(key) as string) ?? ""
+        return val.toString().toLowerCase().includes(search)
+      })
     },
-  });
+  })
 
   return (
     <div>
       {/* search and add div */}
       <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center py-4 w-full md:max-w-sm relative">
+        <div className="relative flex w-full items-center py-4 md:max-w-sm">
           <Input
             placeholder={searchPlaceholder}
             value={globalFilter ?? ""}
             onChange={(event) => setGlobalFilter(event.target.value)}
             className="max-w-sm pr-10"
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+          <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
             <Search className="h-4 w-4" />
           </span>
         </div>
@@ -132,7 +132,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
           {!hideAddButton && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 cursor-pointer duration-200 ease-linear">
                   <Plus />
                   <span>{addTitle}</span>
                 </Button>
@@ -175,7 +175,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
-          <TableHeader className="bg-gradient-to-l from-primary/5 to-card shadow-xs">
+          <TableHeader className="from-primary/5 to-card bg-gradient-to-l shadow-xs">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -222,17 +222,17 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
           </TableBody>
         </Table>
       </div>
-      <div className="text-muted-foreground flex-1 text-sm px-0 py-2">
+      <div className="text-muted-foreground flex-1 px-0 py-2 text-sm">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
-      <div className="flex items-center justify-end space-x-6 lg:space-x-8 py-2">
+      <div className="flex items-center justify-end space-x-6 py-2 lg:space-x-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value));
+              table.setPageSize(Number(value))
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
@@ -295,5 +295,5 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
         </div>
       </div>
     </div>
-  );
+  )
 }

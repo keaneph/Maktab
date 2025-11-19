@@ -27,15 +27,17 @@ export const programSchema = z.object({
     .string()
     .min(1, { message: "Program code is required" })
     .max(10, { message: "Program code must be at most 10 characters" })
-    .regex(/^[A-Za-z]+$/i, { message: "Program code must contain only letters" }),
+    .regex(/^[A-Za-z]+$/i, {
+      message: "Program code must contain only letters",
+    }),
   name: z
     .string()
     .min(2, { message: "Program name is required" })
     .max(100, { message: "Program name must be at most 100 characters" })
-    .regex(/^[A-Za-z\s,]+$/, { message: "Program name must contain only letters and spaces" }),
-  college_code: z
-    .string()
-    .min(1, { message: "College is required" }),
+    .regex(/^[A-Za-z\s,]+$/, {
+      message: "Program name must contain only letters and spaces",
+    }),
+  college_code: z.string().min(1, { message: "College is required" }),
 })
 
 export type ProgramFormValues = z.infer<typeof programSchema>
@@ -56,10 +58,14 @@ export function ProgramForm({
   defaultValues?: { code: string; name: string; college_code: string }
 }) {
   const schemaWithDuplicateCheck = programSchema.extend({
-    code: programSchema.shape.code.refine(
-      (val) => !existingCodes.includes(val.toUpperCase()) || val.toUpperCase() === defaultValues.code.toUpperCase(),
-      { message: "This program code already exists" }
-    ).transform((val) => val.toUpperCase()),
+    code: programSchema.shape.code
+      .refine(
+        (val) =>
+          !existingCodes.includes(val.toUpperCase()) ||
+          val.toUpperCase() === defaultValues.code.toUpperCase(),
+        { message: "This program code already exists" }
+      )
+      .transform((val) => val.toUpperCase()),
   })
 
   const form = useForm<ProgramFormValues>({
@@ -93,14 +99,19 @@ export function ProgramForm({
   const filteredColleges = React.useMemo(() => {
     const s = search.trim().toLowerCase()
     if (!s) return colleges
-    return colleges.filter((c) =>
-      c.name.toLowerCase().includes(s) || c.code.toLowerCase().includes(s)
+    return colleges.filter(
+      (c) =>
+        c.name.toLowerCase().includes(s) || c.code.toLowerCase().includes(s)
     )
   }, [search, colleges])
 
   return (
     <Form {...form}>
-      <form id="program-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        id="program-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
         <FormField
           control={form.control}
           name="code"
@@ -121,7 +132,10 @@ export function ProgramForm({
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="Bachelor of Science in Computer Science" {...field} />
+                <Input
+                  placeholder="Bachelor of Science in Computer Science"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -149,7 +163,8 @@ export function ProgramForm({
                   </div>
                   {filteredColleges.map((c) => (
                     <SelectItem key={c.code} value={c.code}>
-                      {c.name} <span className="text-muted-foreground">({c.code})</span>
+                      {c.name}{" "}
+                      <span className="text-muted-foreground">({c.code})</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -162,6 +177,3 @@ export function ProgramForm({
     </Form>
   )
 }
-
-
-

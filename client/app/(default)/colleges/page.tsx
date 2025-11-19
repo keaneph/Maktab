@@ -1,85 +1,84 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import useSWR, { mutate as globalMutate } from "swr";
-import { SiteHeader } from "@/components/site-header";
-import { Colleges, columns } from "./columns";
-import { Programs } from "../programs/columns";
-import { Students } from "../students/columns";
-import { Miscellaneous } from "../miscellaneous/columns";
-import { DataTable } from "@/components/data-table";
-import { SectionCards } from "@/components/section-cards";
-import { CollegeForm } from "@/components/college-form";
-import { toast } from "sonner";
+import * as React from "react"
+import useSWR, { mutate as globalMutate } from "swr"
+import { authFetch } from "@/lib/api"
+import { SiteHeader } from "@/components/layout/site-header"
+import { Colleges, columns } from "./columns"
+import { Programs } from "../programs/columns"
+import { Students } from "../students/columns"
+import { Miscellaneous } from "../miscellaneous/columns"
+import { DataTable } from "@/components/data/data-table"
+import { SectionCards } from "@/components/data/section-cards"
+import { CollegeForm } from "@/components/forms/college-form"
+import { toast } from "sonner"
 
 export default function CollegesPage() {
   const { data: collegeData = [], error: collegesErr } = useSWR<
     Colleges[],
     Error
-  >("http://localhost:8080/api/colleges/");
+  >("http://localhost:8080/api/colleges/")
+
   const { data: programData = [], error: programsErr } = useSWR<
     Programs[],
     Error
-  >("http://localhost:8080/api/programs/");
+  >("http://localhost:8080/api/programs/")
+
   const { data: studentData = [], error: studentsErr } = useSWR<
     Students[],
     Error
-  >("http://localhost:8080/api/students/");
+  >("http://localhost:8080/api/students/")
+
   const { data: userData = [], error: userErr } = useSWR<
     Miscellaneous[],
     Error
-  >("http://localhost:8080/api/users/");
+  >("http://localhost:8080/api/users/")
 
   React.useEffect(() => {
     if (collegesErr)
-      toast.error(`Error fetching colleges: ${collegesErr.message}`);
-  }, [collegesErr]);
+      toast.error(`Error fetching colleges: ${collegesErr.message}`)
+  }, [collegesErr])
   React.useEffect(() => {
     if (programsErr)
-      toast.error(`Error fetching programs: ${programsErr.message}`);
-  }, [programsErr]);
+      toast.error(`Error fetching programs: ${programsErr.message}`)
+  }, [programsErr])
   React.useEffect(() => {
     if (studentsErr)
-      toast.error(`Error fetching students: ${studentsErr.message}`);
-  }, [studentsErr]);
+      toast.error(`Error fetching students: ${studentsErr.message}`)
+  }, [studentsErr])
   React.useEffect(() => {
-    if (userErr) toast.error(`Error fetching users: ${userErr.message}`);
-  }, [userErr]);
+    if (userErr) toast.error(`Error fetching users: ${userErr.message}`)
+  }, [userErr])
 
   // handler for adding a college
   // this makes sure that when i call this function, it passes the right values
   async function handleAdd(values: { code: string; name: string }) {
     const newItem: Colleges = {
       ...values,
-    };
+    }
 
     // optimistic update
     await globalMutate(
       "http://localhost:8080/api/colleges/",
       async (current: Colleges[] = []) => {
-        const res = await fetch("http://localhost:8080/api/colleges/", {
+        const res = await authFetch("http://localhost:8080/api/colleges/", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          credentials: "include",
           body: JSON.stringify({
             code: newItem.code,
             name: newItem.name,
           }),
-        });
-        if (!res.ok) throw new Error("Failed to add");
-        const created = await res.json();
-        return [...current, created];
+        })
+        if (!res.ok) throw new Error("Failed to add")
+        const created = await res.json()
+        return [...current, created]
       },
       {
         revalidate: false,
         optimisticData: (current?: Colleges[]) => [...(current ?? []), newItem],
         rollbackOnError: true,
       }
-    );
-    toast.success("College added successfully!");
+    )
+    toast.success("College added successfully!")
   }
 
   // handler for editing a college
@@ -89,22 +88,20 @@ export default function CollegesPage() {
   ) {
     const payload = {
       ...data,
-    };
+    }
     await globalMutate(
       "http://localhost:8080/api/colleges/",
       async (current: Colleges[] = []) => {
-        const res = await fetch(
+        const res = await authFetch(
           `http://localhost:8080/api/colleges/${oldCode}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify(payload),
           }
-        );
-        if (!res.ok) throw new Error("Failed to update college");
-        const updated = await res.json();
-        return current.map((c: Colleges) => (c.code === oldCode ? updated : c));
+        )
+        if (!res.ok) throw new Error("Failed to update college")
+        const updated = await res.json()
+        return current.map((c: Colleges) => (c.code === oldCode ? updated : c))
       },
       {
         revalidate: false,
@@ -114,8 +111,8 @@ export default function CollegesPage() {
           ),
         rollbackOnError: true,
       }
-    );
-    toast.success("College updated successfully!");
+    )
+    toast.success("College updated successfully!")
   }
 
   // handler for deleting a college
@@ -123,13 +120,15 @@ export default function CollegesPage() {
     await globalMutate(
       "http://localhost:8080/api/colleges/",
       async (current: Colleges[] = []) => {
-        const res = await fetch(`http://localhost:8080/api/colleges/${code}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("Failed to delete college");
-        await res.json();
-        return current.filter((c: Colleges) => c.code !== code);
+        const res = await authFetch(
+          `http://localhost:8080/api/colleges/${code}`,
+          {
+            method: "DELETE",
+          }
+        )
+        if (!res.ok) throw new Error("Failed to delete college")
+        await res.json()
+        return current.filter((c: Colleges) => c.code !== code)
       },
       {
         revalidate: false,
@@ -137,25 +136,24 @@ export default function CollegesPage() {
           (current ?? []).filter((c: Colleges) => c.code !== code),
         rollbackOnError: true,
       }
-    );
-    toast.success("College deleted successfully!");
+    )
+    toast.success("College deleted successfully!")
   }
 
   // bulk delete for colleges with single mutate for optimistic UI
   async function handleBulkDelete(codes: string[]) {
-    const setCodes = new Set(codes);
+    const setCodes = new Set(codes)
     await globalMutate(
       "http://localhost:8080/api/colleges/",
       async (current: Colleges[] = []) => {
         await Promise.all(
-          codes.map((code) =>
-            fetch(`http://localhost:8080/api/colleges/${code}`, {
+          codes.map((c) =>
+            authFetch(`http://localhost:8080/api/colleges/${c}`, {
               method: "DELETE",
-              credentials: "include",
             })
           )
-        );
-        return current.filter((c: Colleges) => !setCodes.has(c.code));
+        )
+        return current.filter((c: Colleges) => !setCodes.has(c.code))
       },
       {
         revalidate: false,
@@ -163,8 +161,8 @@ export default function CollegesPage() {
           (current ?? []).filter((c: Colleges) => !setCodes.has(c.code)),
         rollbackOnError: true,
       }
-    );
-    toast.success(`${codes.length} college(s) deleted successfully!`);
+    )
+    toast.success(`${codes.length} college(s) deleted successfully!`)
   }
 
   return (
@@ -205,5 +203,5 @@ export default function CollegesPage() {
         </div>
       </div>
     </>
-  );
+  )
 }
