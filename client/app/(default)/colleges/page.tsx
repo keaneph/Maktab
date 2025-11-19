@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { authFetch, fetcher } from "@/lib/api"
+import { authFetch } from "@/lib/api"
 import { SiteHeader } from "@/components/layout/site-header"
 import { Colleges, columns } from "./columns"
 import { DataTable } from "@/components/data/data-table"
@@ -14,16 +14,27 @@ export default function CollegesPage() {
   const [collegeData, setCollegeData] = React.useState<Colleges[]>([])
   const { refreshCounts } = useCounts()
 
+  const fetchColleges = React.useCallback(
+    async (init?: RequestInit) => {
+      const res = await fetch("http://localhost:8080/api/colleges/", init)
+      if (!res.ok) {
+        const message = await res.text().catch(() => "")
+        throw new Error(message || "Failed to fetch colleges")
+      }
+      return (await res.json()) as Colleges[]
+    },
+    []
+  )
+
   // Fetch only what we need: colleges (for table)
   React.useEffect(() => {
     const abortController = new AbortController()
-    
+
     async function fetchData() {
       try {
-        const colleges = await fetcher<Colleges[]>(
-          "http://localhost:8080/api/colleges/",
-          { signal: abortController.signal }
-        )
+        const colleges = await fetchColleges({
+          signal: abortController.signal,
+        })
         if (!abortController.signal.aborted) {
           setCollegeData(colleges)
         }
@@ -34,7 +45,7 @@ export default function CollegesPage() {
       }
     }
     fetchData()
-    
+
     return () => {
       abortController.abort()
     }
@@ -43,9 +54,7 @@ export default function CollegesPage() {
   // Refetch function
   const refetchData = React.useCallback(async () => {
     try {
-      const colleges = await fetcher<Colleges[]>(
-        "http://localhost:8080/api/colleges/"
-      )
+      const colleges = await fetchColleges()
       setCollegeData(colleges)
       // Refresh counts after data changes
       await refreshCounts()

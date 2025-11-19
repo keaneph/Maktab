@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { fetcher } from "@/lib/api"
 
 interface Counts {
   colleges: number
@@ -12,7 +11,7 @@ interface Counts {
 
 interface CountsContextType {
   counts: Counts
-  refreshCounts: () => Promise<void>
+  refreshCounts: (signal?: AbortSignal) => Promise<void>
   isLoading: boolean
 }
 
@@ -27,44 +26,38 @@ export function CountsProvider({ children }: { children: React.ReactNode }) {
   })
   const [isLoading, setIsLoading] = React.useState(true)
 
-  const refreshCounts = React.useCallback(async () => {
+  const refreshCounts = React.useCallback(async (signal?: AbortSignal) => {
     try {
-      const data = await fetcher<Counts>("http://localhost:8080/api/metrics/counts")
+      const res = await fetch("http://localhost:8080/api/metrics/counts", {
+        signal,
+      })
+      if (!res.ok) {
+        const message = await res.text().catch(() => "")
+        throw new Error(message || "Failed to fetch counts")
+      }
+      const data = (await res.json()) as Counts
+      if (signal?.aborted) return
       setCounts(data)
     } catch (error) {
+      if (signal?.aborted) return
       console.warn("Failed to fetch counts:", error)
       // Keep existing counts on error
     } finally {
-      setIsLoading(false)
+      if (!signal?.aborted) {
+        setIsLoading(false)
+      }
     }
   }, [])
 
   // Fetch counts on mount
   React.useEffect(() => {
     const abortController = new AbortController()
-    
-    async function fetchCounts() {
-      try {
-        const data = await fetcher<Counts>("http://localhost:8080/api/metrics/counts", { signal: abortController.signal })
-        if (!abortController.signal.aborted) {
-          setCounts(data)
-        }
-      } catch (error) {
-        if (abortController.signal.aborted) return
-        console.warn("Failed to fetch counts:", error)
-        // Keep existing counts on error
-      } finally {
-        if (!abortController.signal.aborted) {
-          setIsLoading(false)
-        }
-      }
-    }
-    fetchCounts()
-    
+    refreshCounts(abortController.signal)
+
     return () => {
       abortController.abort()
     }
-  }, [])
+  }, [refreshCounts])
 
   return (
     <CountsContext.Provider value={{ counts, refreshCounts, isLoading }}>

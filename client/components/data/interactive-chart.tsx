@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { fetcher } from "@/lib/api"
 import { toast } from "sonner"
 
 import {
@@ -43,19 +42,37 @@ export function ChartAreaInteractive() {
   const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
+    const abortController = new AbortController()
+
     async function fetchMetrics() {
       try {
         setIsLoading(true)
-        const metrics = await fetcher("http://localhost:8080/api/metrics/daily")
-        setData(metrics)
+        const res = await fetch("http://localhost:8080/api/metrics/daily", {
+          signal: abortController.signal,
+        })
+        if (!res.ok) {
+          const message = await res.text().catch(() => "")
+          throw new Error(message || "Failed to fetch metrics")
+        }
+        const metrics = await res.json()
+        if (!abortController.signal.aborted) {
+          setData(metrics)
+        }
       } catch (error) {
+        if (abortController.signal.aborted) return
         const err = error as Error
         toast.error(`Error fetching metrics: ${err.message}`)
       } finally {
-        setIsLoading(false)
+        if (!abortController.signal.aborted) {
+          setIsLoading(false)
+        }
       }
     }
     fetchMetrics()
+
+    return () => {
+      abortController.abort()
+    }
   }, [])
 
   return (

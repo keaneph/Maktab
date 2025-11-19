@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { authFetch, fetcher } from "@/lib/api"
+import { authFetch } from "@/lib/api"
 import { SiteHeader } from "@/components/layout/site-header"
 import { Programs } from "../programs/columns"
 import { Students, columns } from "./columns"
@@ -14,8 +14,25 @@ import { toast } from "sonner"
 export default function StudentsPage() {
   const [studentData, setStudentData] = React.useState<Students[]>([])
   const [programData, setProgramData] = React.useState<Programs[]>([])
-  const [isLoading, setIsLoading] = React.useState(true)
   const { refreshCounts } = useCounts()
+
+  const fetchStudents = React.useCallback(async (init?: RequestInit) => {
+    const res = await fetch("http://localhost:8080/api/students/", init)
+    if (!res.ok) {
+      const message = await res.text().catch(() => "")
+      throw new Error(message || "Failed to fetch students")
+    }
+    return (await res.json()) as Students[]
+  }, [])
+
+  const fetchPrograms = React.useCallback(async (init?: RequestInit) => {
+    const res = await fetch("http://localhost:8080/api/programs/", init)
+    if (!res.ok) {
+      const message = await res.text().catch(() => "")
+      throw new Error(message || "Failed to fetch programs")
+    }
+    return (await res.json()) as Programs[]
+  }, [])
 
   // Fetch only what we need: programs (for form dropdown) and students (for table)
   React.useEffect(() => {
@@ -23,12 +40,15 @@ export default function StudentsPage() {
     
     async function fetchData() {
       try {
-        setIsLoading(true)
-        const students = await fetcher<Students[]>("http://localhost:8080/api/students/", { signal: abortController.signal })
+        const students = await fetchStudents({
+          signal: abortController.signal,
+        })
         if (!abortController.signal.aborted) {
           setStudentData(students)
         }
-        const programs = await fetcher<Programs[]>("http://localhost:8080/api/programs/", { signal: abortController.signal })
+        const programs = await fetchPrograms({
+          signal: abortController.signal,
+        })
         if (!abortController.signal.aborted) {
           setProgramData(programs)
         }
@@ -36,10 +56,6 @@ export default function StudentsPage() {
         if (abortController.signal.aborted) return
         const err = error as Error
         toast.error(`Error fetching data: ${err.message}`)
-      } finally {
-        if (!abortController.signal.aborted) {
-          setIsLoading(false)
-        }
       }
     }
     fetchData()
@@ -52,9 +68,9 @@ export default function StudentsPage() {
   // Refetch function
   const refetchData = React.useCallback(async () => {
     try {
-      const students = await fetcher<Students[]>("http://localhost:8080/api/students/")
+      const students = await fetchStudents()
       setStudentData(students)
-      const programs = await fetcher<Programs[]>("http://localhost:8080/api/programs/")
+      const programs = await fetchPrograms()
       setProgramData(programs)
       // Refresh counts after data changes
       await refreshCounts()

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { authFetch, fetcher } from "@/lib/api"
+import { authFetch } from "@/lib/api"
 import { toast } from "sonner"
 import { SiteHeader } from "@/components/layout/site-header"
 import { columns, Miscellaneous } from "./columns"
@@ -11,8 +11,16 @@ import { useCounts } from "@/components/data/counts-context"
 
 export default function MiscellaneousPage() {
   const [userData, setUserData] = React.useState<Miscellaneous[]>([])
-  const [isLoading, setIsLoading] = React.useState(true)
   const { refreshCounts } = useCounts()
+
+  const fetchUsers = React.useCallback(async (init?: RequestInit) => {
+    const res = await fetch("http://localhost:8080/api/users/", init)
+    if (!res.ok) {
+      const message = await res.text().catch(() => "")
+      throw new Error(message || "Failed to fetch users")
+    }
+    return (await res.json()) as Miscellaneous[]
+  }, [])
 
   // Fetch only what we need: users (for table)
   React.useEffect(() => {
@@ -20,8 +28,9 @@ export default function MiscellaneousPage() {
     
     async function fetchData() {
       try {
-        setIsLoading(true)
-        const users = await fetcher<Miscellaneous[]>("http://localhost:8080/api/users/", { signal: abortController.signal })
+        const users = await fetchUsers({
+          signal: abortController.signal,
+        })
         if (!abortController.signal.aborted) {
           setUserData(users)
         }
@@ -29,10 +38,6 @@ export default function MiscellaneousPage() {
         if (abortController.signal.aborted) return
         const err = error as Error
         toast.error(`Error fetching data: ${err.message}`)
-      } finally {
-        if (!abortController.signal.aborted) {
-          setIsLoading(false)
-        }
       }
     }
     fetchData()
@@ -45,7 +50,7 @@ export default function MiscellaneousPage() {
   // Refetch function
   const refetchData = React.useCallback(async () => {
     try {
-      const users = await fetcher<Miscellaneous[]>("http://localhost:8080/api/users/")
+      const users = await fetchUsers()
       setUserData(users)
       // Refresh counts after data changes
       await refreshCounts()
