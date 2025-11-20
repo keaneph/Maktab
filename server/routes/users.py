@@ -26,7 +26,7 @@ def delete_user(email: str):
     result = (
         supabase.table("users")
         .delete()
-        .eq(email)
+        .eq("email", email)
         .select("email")
         .execute()
     )

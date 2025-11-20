@@ -20,10 +20,13 @@ import {
 export default function CollegesPage() {
   const [collegeData, setCollegeData] = React.useState<Colleges[]>([])
   const { refreshCounts } = useCounts()
+  const hasLoaded = React.useRef(false)
 
-  // Fetch once
   React.useEffect(() => {
-    loadColleges()
+    if (!hasLoaded.current) {
+      loadColleges()
+      hasLoaded.current = true
+    }
   }, [])
 
   async function loadColleges() {
@@ -86,6 +89,7 @@ export default function CollegesPage() {
   return (
     <>
       <SiteHeader title="Colleges" />
+
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <SectionCards active="college" />
         <div className="px-4 lg:px-6">

@@ -4,7 +4,7 @@ export interface MiscUser {
   email: string
 }
 
-const BASE_URL = "http://localhost:8080/api/users"
+const BASE_URL = "http://localhost:8080/api/users/"
 
 export async function getUsers(): Promise<MiscUser[]> {
   const res = await fetch(`${BASE_URL}`)

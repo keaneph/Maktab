@@ -25,9 +25,13 @@ export default function ProgramsPage() {
   const [programs, setPrograms] = React.useState<Programs[]>([])
   const { refreshCounts } = useCounts()
 
-  // initial load
+  const hasLoaded = React.useRef(false)
+
   React.useEffect(() => {
-    loadData()
+    if (!hasLoaded.current) {
+      loadData()
+      hasLoaded.current = true
+    }
   }, [])
 
   async function loadData() {

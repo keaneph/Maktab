@@ -17,10 +17,13 @@ import {
 export default function MiscellaneousPage() {
   const [userData, setUserData] = React.useState<Miscellaneous[]>([])
   const { refreshCounts } = useCounts()
+  const hasLoaded = React.useRef(false)
 
-  // Load once
   React.useEffect(() => {
-    loadUsers()
+    if (!hasLoaded.current) {
+      loadUsers()
+      hasLoaded.current = true
+    }
   }, [])
 
   async function loadUsers() {
