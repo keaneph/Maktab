@@ -1,10 +1,11 @@
 import { authFetch } from "@/lib/api"
+import { apiUrl } from "@/lib/config"
 import { Students } from "@/app/(default)/students/columns"
 
-const BASE_URL = "http://localhost:8080/api/students/"
+const BASE_URL = `${apiUrl("/api/students")}/`
 
 export async function getStudents(): Promise<Students[]> {
-  const res = await fetch(`${BASE_URL}/`)
+  const res = await fetch(`${BASE_URL}`)
   if (!res.ok) {
     const message = await res.text().catch(() => "")
     throw new Error(message || "Failed to fetch students")
@@ -75,7 +76,7 @@ export async function deleteStudent(idNo: string) {
 
 export async function bulkDeleteStudents(ids: string[]) {
   const promises = ids.map((id) =>
-    authFetch(`${BASE_URL}/${id}`, {
+    authFetch(`${BASE_URL}${id}`, {
       method: "DELETE",
       credentials: "include",
     })

@@ -1,7 +1,8 @@
 import { authFetch } from "@/lib/api"
+import { apiUrl } from "@/lib/config"
 import { Programs } from "@/app/(default)/programs/columns"
 
-const BASE_URL = "http://localhost:8080/api/programs/"
+const BASE_URL = `${apiUrl("/api/programs")}/`
 
 export async function getPrograms(): Promise<Programs[]> {
   const res = await fetch(BASE_URL)

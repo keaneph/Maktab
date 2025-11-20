@@ -1,10 +1,11 @@
 import { authFetch } from "@/lib/api"
+import { apiUrl } from "@/lib/config"
 
 export interface MiscUser {
   email: string
 }
 
-const BASE_URL = "http://localhost:8080/api/users/"
+const BASE_URL = `${apiUrl("/api/users")}/`
 
 export async function getUsers(): Promise<MiscUser[]> {
   const res = await fetch(`${BASE_URL}`)
@@ -13,7 +14,9 @@ export async function getUsers(): Promise<MiscUser[]> {
 }
 
 export async function deleteUser(email: string) {
-  const res = await authFetch(`${BASE_URL}${email}`, { method: "DELETE" })
+  const res = await authFetch(`${BASE_URL}${encodeURIComponent(email)}`, {
+    method: "DELETE",
+  })
   if (!res.ok) throw new Error("Failed to delete user")
 }
 
