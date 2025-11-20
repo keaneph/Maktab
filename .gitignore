@@ -18,7 +18,8 @@ instance/
 .pytest_cache/
 
 # env files
-.env
+.env*
+!.env.example
 
 # next.js
 node_modules/
