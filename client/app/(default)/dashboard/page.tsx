@@ -1,9 +1,22 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SectionCards } from "@/components/data/section-cards"
-import { ChartAreaInteractive } from "@/components/data/interactive-chart"
+
+const ChartAreaInteractive = dynamic(
+  () =>
+    import("@/components/data/interactive-chart").then(
+      (mod) => mod.ChartAreaInteractive
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-muted h-[400px] animate-pulse rounded-lg" />
+    ),
+  }
+)
 
 export default function DashboardPage() {
   return (

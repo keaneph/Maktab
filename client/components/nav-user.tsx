@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { ChevronsUpDown, LogOut } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -18,13 +18,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { createClient } from "@/lib/client"
-import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { clearTokenCache } from "@/lib/api"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
+  const [, startTransition] = useTransition()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const [userInfo, setUserInfo] = useState({
     email: "",
@@ -58,10 +59,21 @@ export function NavUser() {
       : "/ent.jpg"
 
   const logout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    clearTokenCache()
-    router.push("/auth/login")
+    if (isLoggingOut) return // Prevent double-clicks
+
+    setIsLoggingOut(true)
+    try {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      clearTokenCache()
+      startTransition(() => {
+        router.push("/auth/login")
+        router.refresh()
+      })
+    } catch (error) {
+      console.error("Logout failed:", error)
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -105,16 +117,11 @@ export function NavUser() {
 
             <DropdownMenuItem
               className="cursor-pointer"
-              onSelect={(e) => e.preventDefault()}
+              onClick={logout}
+              disabled={isLoggingOut}
             >
               <LogOut />
-              <Button
-                variant="ghost"
-                className="m-0 cursor-pointer p-0 font-normal"
-                onClick={logout}
-              >
-                Logout
-              </Button>
+              {isLoggingOut ? "Logging out..." : "Logout"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

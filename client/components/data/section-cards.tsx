@@ -15,7 +15,16 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export function SectionCards({
+function computeDelta(current?: number, previous?: number) {
+  const curr = typeof current === "number" ? current : 0
+  const prevVal = typeof previous === "number" ? previous : 0
+  const diff = curr - prevVal
+  const pct =
+    prevVal === 0 ? (curr > 0 ? 100 : 0) : Math.round((diff / prevVal) * 100)
+  return { diff, pct }
+}
+
+export const SectionCards = React.memo(function SectionCards({
   active,
 }: {
   active?: "college" | "program" | "student" | "miscellaneous"
@@ -29,19 +38,22 @@ export function SectionCards({
   const last = metrics?.[metrics.length - 1]
   const prev = metrics?.[metrics.length - 2]
 
-  function computeDelta(current?: number, previous?: number) {
-    const curr = typeof current === "number" ? current : 0
-    const prevVal = typeof previous === "number" ? previous : 0
-    const diff = curr - prevVal
-    const pct =
-      prevVal === 0 ? (curr > 0 ? 100 : 0) : Math.round((diff / prevVal) * 100)
-    return { diff, pct }
-  }
-
-  const collegeDelta = computeDelta(last?.college, prev?.college)
-  const programDelta = computeDelta(last?.program, prev?.program)
-  const studentDelta = computeDelta(last?.students, prev?.students)
-  const userDelta = computeDelta(last?.users, prev?.users)
+  const collegeDelta = React.useMemo(
+    () => computeDelta(last?.college, prev?.college),
+    [last?.college, prev?.college]
+  )
+  const programDelta = React.useMemo(
+    () => computeDelta(last?.program, prev?.program),
+    [last?.program, prev?.program]
+  )
+  const studentDelta = React.useMemo(
+    () => computeDelta(last?.students, prev?.students),
+    [last?.students, prev?.students]
+  )
+  const userDelta = React.useMemo(
+    () => computeDelta(last?.users, prev?.users),
+    [last?.users, prev?.users]
+  )
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -142,7 +154,7 @@ export function SectionCards({
         className={`@container/card ${active === "miscellaneous" ? activeClasses : ""}`}
       >
         <CardHeader>
-          <CardDescription>Total Site Visits</CardDescription>
+          <CardDescription>Total Users</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {counts.users}
           </CardTitle>
@@ -165,10 +177,10 @@ export function SectionCards({
             )}
           </div>
           <div className="text-muted-foreground">
-            Overall site visit count increase is {userDelta.diff}
+            Overall user count increase is {userDelta.diff}
           </div>
         </CardFooter>
       </Card>
     </div>
   )
-}
+})
