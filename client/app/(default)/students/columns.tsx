@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef, Table } from "@tanstack/react-table"
-import { ArrowUpDown, MoreVertical } from "lucide-react"
+import { ArrowUpDown, Loader2, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import * as React from "react"
@@ -43,9 +43,23 @@ function DeleteDialog({
 }: {
   open: boolean
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: () => Promise<void> | void
   studentName: string
 }) {
+  const [isDeleting, setIsDeleting] = React.useState(false)
+
+  async function handleDelete() {
+    try {
+      setIsDeleting(true)
+      await onConfirm?.()
+      onClose()
+    } catch {
+      // handled upstream
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -70,12 +84,17 @@ function DeleteDialog({
           <Button
             variant="destructive"
             className="cursor-pointer"
-            onClick={() => {
-              onConfirm()
-              onClose()
-            }}
+            disabled={isDeleting}
+            onClick={handleDelete}
           >
-            Delete
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -107,6 +126,7 @@ function EditDialog({
   existingIds?: string[]
 }) {
   const [isFormValid, setIsFormValid] = React.useState(false)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   async function handleSubmit(values: {
     idNo: string
@@ -136,8 +156,8 @@ function EditDialog({
           onSubmit={handleSubmit}
           existingIds={existingIds}
           programs={programs}
-          onSuccess={onClose}
           onValidityChange={setIsFormValid}
+          onSubmittingChange={setIsSubmitting}
           defaultValues={{
             idNo: student.idNo,
             firstName: student.firstName,
@@ -157,12 +177,21 @@ function EditDialog({
           <Button
             type="submit"
             form="student-form"
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSubmitting}
             className={
-              !isFormValid ? "bg-gray-400 hover:bg-gray-400" : "cursor-pointer"
+              !isFormValid || isSubmitting
+                ? "bg-gray-400 hover:bg-gray-400"
+                : "cursor-pointer"
             }
           >
-            Save Changes
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -181,10 +210,24 @@ function BulkDeleteDialog({
 }: {
   open: boolean
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: () => Promise<void> | void
   count: number
   noun: string
 }) {
+  const [isDeleting, setIsDeleting] = React.useState(false)
+
+  async function handleBulkDelete() {
+    try {
+      setIsDeleting(true)
+      await onConfirm?.()
+      onClose()
+    } catch {
+      // handled upstream
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -208,12 +251,17 @@ function BulkDeleteDialog({
           <Button
             variant="destructive"
             className="cursor-pointer"
-            onClick={() => {
-              onConfirm()
-              onClose()
-            }}
+            disabled={isDeleting}
+            onClick={handleBulkDelete}
           >
-            Delete
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -296,9 +344,8 @@ function ActionsCell({
         student={student}
         programs={programs}
         existingIds={existingIds}
-        onConfirm={(data) => {
-          onEdit?.(student.idNo, data)
-          setIsEditOpen(false)
+        onConfirm={async (data) => {
+          await onEdit?.(student.idNo, data)
         }}
       />
 

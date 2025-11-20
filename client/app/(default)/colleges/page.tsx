@@ -8,6 +8,7 @@ import { SectionCards } from "@/components/data/section-cards"
 import { CollegeForm } from "@/components/forms/college-form"
 import { useCounts } from "@/components/data/counts-context"
 import { toast } from "sonner"
+import { TableSkeleton } from "@/components/data/table-skeleton"
 
 import {
   getColleges,
@@ -21,20 +22,27 @@ export default function CollegesPage() {
   const [collegeData, setCollegeData] = React.useState<Colleges[]>([])
   const { refreshCounts } = useCounts()
   const hasLoaded = React.useRef(false)
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
     if (!hasLoaded.current) {
-      loadColleges()
+      loadColleges({ showSkeleton: true })
       hasLoaded.current = true
     }
   }, [])
 
-  async function loadColleges() {
+  async function loadColleges(options: { showSkeleton?: boolean } = {}) {
+    const { showSkeleton = false } = options
+    if (showSkeleton) setIsLoading(true)
     try {
       const data = await getColleges()
       setCollegeData(data)
     } catch (err) {
       toast.error(`Error fetching data: ${(err as Error).message}`)
+    } finally {
+      if (showSkeleton) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -50,6 +58,7 @@ export default function CollegesPage() {
       toast.success("College added successfully!")
     } catch (err) {
       toast.error(`Failed to add college: ${(err as Error).message}`)
+      throw err
     }
   }
 
@@ -63,6 +72,7 @@ export default function CollegesPage() {
       toast.success("College updated!")
     } catch (err) {
       toast.error(`Failed to edit college: ${(err as Error).message}`)
+      throw err
     }
   }
 
@@ -73,6 +83,7 @@ export default function CollegesPage() {
       toast.success("College deleted!")
     } catch (err) {
       toast.error(`Failed to delete college: ${(err as Error).message}`)
+      throw err
     }
   }
 
@@ -83,6 +94,7 @@ export default function CollegesPage() {
       toast.success(`${codes.length} college(s) deleted!`)
     } catch (err) {
       toast.error(`Failed to delete colleges: ${(err as Error).message}`)
+      throw err
     }
   }
 
@@ -93,27 +105,36 @@ export default function CollegesPage() {
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <SectionCards active="college" />
         <div className="px-4 lg:px-6">
-          <DataTable
-            columns={columns(
-              handleDelete,
-              handleEdit,
-              handleBulkDelete,
-              collegeData.map((c) => c.code.toUpperCase())
-            )}
-            data={collegeData}
-            searchPlaceholder="Search colleges..."
-            addTitle="Add College"
-            addDescription="Add a new college"
-            searchKeys={["code", "name"]}
-            renderAddForm={({ onSuccess, onValidityChange }) => (
-              <CollegeForm
-                onSubmit={handleAdd}
-                existingCodes={collegeData.map((c) => c.code.toUpperCase())}
-                onSuccess={onSuccess}
-                onValidityChange={onValidityChange}
-              />
-            )}
-          />
+          {isLoading ? (
+            <TableSkeleton />
+          ) : (
+            <DataTable
+              columns={columns(
+                handleDelete,
+                handleEdit,
+                handleBulkDelete,
+                collegeData.map((c) => c.code.toUpperCase())
+              )}
+              data={collegeData}
+              searchPlaceholder="Search colleges..."
+              addTitle="Add College"
+              addDescription="Add a new college"
+              searchKeys={["code", "name"]}
+              renderAddForm={({
+                onSuccess,
+                onValidityChange,
+                setIsSubmitting,
+              }) => (
+                <CollegeForm
+                  onSubmit={handleAdd}
+                  existingCodes={collegeData.map((c) => c.code.toUpperCase())}
+                  onSuccess={onSuccess}
+                  onValidityChange={onValidityChange}
+                  onSubmittingChange={setIsSubmitting}
+                />
+              )}
+            />
+          )}
         </div>
       </div>
     </>

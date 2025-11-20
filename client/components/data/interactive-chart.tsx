@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { toast } from "sonner"
+import { useDailyMetrics } from "./use-daily-metrics"
 
 import {
   Card,
@@ -37,51 +38,14 @@ const chartConfig: ChartConfig = {
   },
 }
 
-interface DailyMetric {
-  date: string
-  college: number
-  program: number
-  students: number
-  users: number
-}
-
 export function ChartAreaInteractive() {
-  const [data, setData] = React.useState<DailyMetric[] | null>(null)
-  const [isLoading, setIsLoading] = React.useState(true)
+  const { data, isLoading, error } = useDailyMetrics()
 
   React.useEffect(() => {
-    const abortController = new AbortController()
-
-    async function fetchMetrics() {
-      try {
-        setIsLoading(true)
-        const res = await fetch("http://localhost:8080/api/metrics/daily", {
-          signal: abortController.signal,
-        })
-        if (!res.ok) {
-          const message = await res.text().catch(() => "")
-          throw new Error(message || "Failed to fetch metrics")
-        }
-        const metrics = await res.json()
-        if (!abortController.signal.aborted) {
-          setData(metrics)
-        }
-      } catch (error) {
-        if (abortController.signal.aborted) return
-        const err = error as Error
-        toast.error(`Error fetching metrics: ${err.message}`)
-      } finally {
-        if (!abortController.signal.aborted) {
-          setIsLoading(false)
-        }
-      }
+    if (error) {
+      toast.error(`Error fetching metrics: ${error.message}`)
     }
-    fetchMetrics()
-
-    return () => {
-      abortController.abort()
-    }
-  }, [])
+  }, [error])
 
   return (
     <Card className="@container/card">

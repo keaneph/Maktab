@@ -13,7 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
 import {
   Select,
   SelectContent,
@@ -49,6 +48,7 @@ export function ProgramForm({
   onSuccess,
   onValidityChange,
   defaultValues = { code: "", name: "", college_code: "" },
+  onSubmittingChange,
 }: {
   onSubmit: (values: ProgramFormValues) => Promise<void>
   existingCodes?: string[]
@@ -56,6 +56,7 @@ export function ProgramForm({
   onSuccess?: () => void
   onValidityChange?: (isValid: boolean) => void
   defaultValues?: { code: string; name: string; college_code: string }
+  onSubmittingChange?: (isSubmitting: boolean) => void
 }) {
   const schemaWithDuplicateCheck = programSchema.extend({
     code: programSchema.shape.code
@@ -88,11 +89,14 @@ export function ProgramForm({
 
   async function handleSubmit(values: ProgramFormValues) {
     try {
-      onSuccess?.()
+      onSubmittingChange?.(true)
       await onSubmit(values)
       form.reset()
-    } catch {
-      toast.error("Failed to add program")
+      onSuccess?.()
+    } catch (error) {
+      throw error
+    } finally {
+      onSubmittingChange?.(false)
     }
   }
 

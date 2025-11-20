@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Loader2,
   Plus,
   Search,
 } from "lucide-react"
@@ -47,6 +48,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
+interface AddFormHandlers {
+  onSuccess: () => void
+  onValidityChange: (isValid: boolean) => void
+  setIsSubmitting: (isSubmitting: boolean) => void
+}
+
 interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -59,10 +66,7 @@ interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
   /** hide the add button and dialog entirely */
   hideAddButton?: boolean
   /** custom form fields for the dialog */
-  renderAddForm?: (props: {
-    onSuccess: () => void
-    onValidityChange: (isValid: boolean) => void
-  }) => React.ReactNode
+  renderAddForm?: (props: AddFormHandlers) => React.ReactNode
   /** id of the form element inside add dialog; used by submit button */
   addFormId?: string
   /** keys in row to search through */
@@ -88,6 +92,14 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
   const [rowSelection, setRowSelection] = React.useState({})
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [isFormValid, setIsFormValid] = React.useState(false)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!isDialogOpen) {
+      setIsFormValid(false)
+      setIsSubmitting(false)
+    }
+  }, [isDialogOpen])
 
   const table = useReactTable({
     data,
@@ -147,6 +159,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
                 {renderAddForm?.({
                   onSuccess: () => setIsDialogOpen(false),
                   onValidityChange: setIsFormValid,
+                  setIsSubmitting,
                 })}
 
                 <DialogFooter className="flex justify-end">
@@ -158,14 +171,21 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
                   <Button
                     type="submit"
                     form={addFormId}
-                    disabled={!isFormValid}
+                    disabled={!isFormValid || isSubmitting}
                     className={
-                      !isFormValid
+                      !isFormValid || isSubmitting
                         ? "bg-gray-400 hover:bg-gray-400"
                         : "cursor-pointer"
                     }
                   >
-                    Save changes
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save changes"
+                    )}
                   </Button>
                 </DialogFooter>
               </DialogContent>

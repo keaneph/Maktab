@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, ExternalLink } from "lucide-react"
 import * as React from "react"
 import { useCounts } from "./counts-context"
+import { useDailyMetrics } from "./use-daily-metrics"
 
 import Link from "next/link"
 
@@ -14,14 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-interface DailyMetric {
-  date: string
-  college: number
-  program: number
-  students: number
-  users: number
-}
-
 export function SectionCards({
   active,
 }: {
@@ -31,36 +24,7 @@ export function SectionCards({
   const activeClasses =
     "!shadow-xs !bg-gradient-to-br !from-primary/5 !to-primary/20"
 
-  const [metrics, setMetrics] = React.useState<DailyMetric[] | null>(null)
-
-  React.useEffect(() => {
-    const abortController = new AbortController()
-
-    async function fetchMetrics() {
-      try {
-        const res = await fetch("http://localhost:8080/api/metrics/daily", {
-          signal: abortController.signal,
-        })
-        if (!res.ok) {
-          const message = await res.text().catch(() => "")
-          throw new Error(message || "Failed to fetch metrics")
-        }
-        const data = await res.json()
-        if (!abortController.signal.aborted) {
-          setMetrics(data)
-        }
-      } catch (error) {
-        if (abortController.signal.aborted) return
-        // Silently fail for metrics - not critical
-        console.warn("Failed to fetch metrics:", error)
-      }
-    }
-    fetchMetrics()
-
-    return () => {
-      abortController.abort()
-    }
-  }, [])
+  const { data: metrics } = useDailyMetrics()
 
   const last = metrics?.[metrics.length - 1]
   const prev = metrics?.[metrics.length - 2]

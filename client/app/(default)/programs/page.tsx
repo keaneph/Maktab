@@ -7,6 +7,7 @@ import { SectionCards } from "@/components/data/section-cards"
 import { ProgramForm } from "@/components/forms/program-form"
 import { toast } from "sonner"
 import { useCounts } from "@/components/data/counts-context"
+import { TableSkeleton } from "@/components/data/table-skeleton"
 
 import { Colleges } from "../colleges/columns"
 import { Programs, columns } from "./columns"
@@ -26,15 +27,18 @@ export default function ProgramsPage() {
   const { refreshCounts } = useCounts()
 
   const hasLoaded = React.useRef(false)
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
     if (!hasLoaded.current) {
-      loadData()
+      loadData({ showSkeleton: true })
       hasLoaded.current = true
     }
   }, [])
 
-  async function loadData() {
+  async function loadData(options: { showSkeleton?: boolean } = {}) {
+    const { showSkeleton = false } = options
+    if (showSkeleton) setIsLoading(true)
     try {
       const [collegesResult, programsResult] = await Promise.all([
         getColleges(),
@@ -44,6 +48,10 @@ export default function ProgramsPage() {
       setPrograms(programsResult)
     } catch (err) {
       toast.error((err as Error).message)
+    } finally {
+      if (showSkeleton) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -63,6 +71,7 @@ export default function ProgramsPage() {
       toast.success("Program added successfully!")
     } catch (err) {
       toast.error((err as Error).message)
+      throw err
     }
   }
 
@@ -76,6 +85,7 @@ export default function ProgramsPage() {
       toast.success("Program updated successfully!")
     } catch (err) {
       toast.error((err as Error).message)
+      throw err
     }
   }
 
@@ -86,6 +96,7 @@ export default function ProgramsPage() {
       toast.success("Program deleted!")
     } catch (err) {
       toast.error((err as Error).message)
+      throw err
     }
   }
 
@@ -96,6 +107,7 @@ export default function ProgramsPage() {
       toast.success(`${codes.length} program(s) deleted!`)
     } catch (err) {
       toast.error((err as Error).message)
+      throw err
     }
   }
 
@@ -107,30 +119,39 @@ export default function ProgramsPage() {
         <SectionCards active="program" />
 
         <div className="px-4 lg:px-6">
-          <DataTable
-            columns={columns(
-              handleDelete,
-              handleEdit,
-              colleges.map((c) => ({ code: c.code, name: c.name })),
-              programs.map((p) => p.code.toUpperCase()),
-              handleBulkDelete
-            )}
-            data={programs}
-            searchKeys={["code", "name", "college_code"]}
-            searchPlaceholder="Search programs..."
-            addTitle="Add Program"
-            addFormId="program-form"
-            addDescription="Add a new program"
-            renderAddForm={({ onSuccess, onValidityChange }) => (
-              <ProgramForm
-                onSubmit={handleAdd}
-                existingCodes={programs.map((p) => p.code.toUpperCase())}
-                colleges={colleges}
-                onSuccess={onSuccess}
-                onValidityChange={onValidityChange}
-              />
-            )}
-          />
+          {isLoading ? (
+            <TableSkeleton />
+          ) : (
+            <DataTable
+              columns={columns(
+                handleDelete,
+                handleEdit,
+                colleges.map((c) => ({ code: c.code, name: c.name })),
+                programs.map((p) => p.code.toUpperCase()),
+                handleBulkDelete
+              )}
+              data={programs}
+              searchKeys={["code", "name", "college_code"]}
+              searchPlaceholder="Search programs..."
+              addTitle="Add Program"
+              addFormId="program-form"
+              addDescription="Add a new program"
+              renderAddForm={({
+                onSuccess,
+                onValidityChange,
+                setIsSubmitting,
+              }) => (
+                <ProgramForm
+                  onSubmit={handleAdd}
+                  existingCodes={programs.map((p) => p.code.toUpperCase())}
+                  colleges={colleges}
+                  onSuccess={onSuccess}
+                  onValidityChange={onValidityChange}
+                  onSubmittingChange={setIsSubmitting}
+                />
+              )}
+            />
+          )}
         </div>
       </div>
     </>

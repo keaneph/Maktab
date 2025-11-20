@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { apiUrl } from "@/lib/config"
 
 interface Counts {
   colleges: number
@@ -28,7 +29,7 @@ export function CountsProvider({ children }: { children: React.ReactNode }) {
 
   const refreshCounts = React.useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("http://localhost:8080/api/metrics/counts", {
+      const res = await fetch(apiUrl("/api/metrics/counts"), {
         signal,
       })
       if (!res.ok) {

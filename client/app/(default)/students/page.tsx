@@ -8,6 +8,7 @@ import { SectionCards } from "@/components/data/section-cards"
 import { StudentForm } from "@/components/forms/student-form"
 import { useCounts } from "@/components/data/counts-context"
 import { toast } from "sonner"
+import { TableSkeleton } from "@/components/data/table-skeleton"
 
 import {
   getStudents,
@@ -26,21 +27,28 @@ export default function StudentsPage() {
   const { refreshCounts } = useCounts()
 
   const hasLoaded = React.useRef(false)
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
     if (!hasLoaded.current) {
-      loadData()
+      loadData({ showSkeleton: true })
       hasLoaded.current = true
     }
   }, [])
 
-  async function loadData() {
+  async function loadData(options: { showSkeleton?: boolean } = {}) {
+    const { showSkeleton = false } = options
+    if (showSkeleton) setIsLoading(true)
     try {
       const [s, p] = await Promise.all([getStudents(), getPrograms()])
       setStudents(s)
       setPrograms(p)
     } catch (err) {
       toast.error(`Error fetching data: ${(err as Error).message}`)
+    } finally {
+      if (showSkeleton) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -63,6 +71,7 @@ export default function StudentsPage() {
       toast.success("Student added successfully!")
     } catch (err) {
       toast.error(`Failed to add student: ${(err as Error).message}`)
+      throw err
     }
   }
 
@@ -83,6 +92,7 @@ export default function StudentsPage() {
       toast.success("Student updated!")
     } catch (err) {
       toast.error(`Failed to update student: ${(err as Error).message}`)
+      throw err
     }
   }
 
@@ -93,6 +103,7 @@ export default function StudentsPage() {
       toast.success("Student deleted!")
     } catch (err) {
       toast.error(`Failed to delete student: ${(err as Error).message}`)
+      throw err
     }
   }
 
@@ -103,6 +114,7 @@ export default function StudentsPage() {
       toast.success(`${ids.length} student(s) deleted!`)
     } catch (err) {
       toast.error(`Failed to delete students: ${(err as Error).message}`)
+      throw err
     }
   }
 
@@ -114,40 +126,49 @@ export default function StudentsPage() {
         <SectionCards active="student" />
 
         <div className="px-4 lg:px-6">
-          <DataTable
-            columns={columns(
-              handleDelete,
-              handleEdit,
-              programs.map((p) => ({ code: p.code, name: p.name })),
-              students.map((s) => s.idNo.toUpperCase()),
-              handleBulkDelete
-            )}
-            data={students}
-            searchPlaceholder="Search students..."
-            addTitle="Add Student"
-            addDescription="Add a new student"
-            addFormId="student-form"
-            searchKeys={[
-              "idNo",
-              "firstName",
-              "lastName",
-              "course",
-              "year",
-              "gender",
-            ]}
-            renderAddForm={({ onSuccess, onValidityChange }) => (
-              <StudentForm
-                onSubmit={handleAdd}
-                existingIds={students.map((s) => s.idNo.toUpperCase())}
-                programs={programs.map((p) => ({
-                  code: p.code,
-                  name: p.name,
-                }))}
-                onSuccess={onSuccess}
-                onValidityChange={onValidityChange}
-              />
-            )}
-          />
+          {isLoading ? (
+            <TableSkeleton rows={6} />
+          ) : (
+            <DataTable
+              columns={columns(
+                handleDelete,
+                handleEdit,
+                programs.map((p) => ({ code: p.code, name: p.name })),
+                students.map((s) => s.idNo.toUpperCase()),
+                handleBulkDelete
+              )}
+              data={students}
+              searchPlaceholder="Search students..."
+              addTitle="Add Student"
+              addDescription="Add a new student"
+              addFormId="student-form"
+              searchKeys={[
+                "idNo",
+                "firstName",
+                "lastName",
+                "course",
+                "year",
+                "gender",
+              ]}
+              renderAddForm={({
+                onSuccess,
+                onValidityChange,
+                setIsSubmitting,
+              }) => (
+                <StudentForm
+                  onSubmit={handleAdd}
+                  existingIds={students.map((s) => s.idNo.toUpperCase())}
+                  programs={programs.map((p) => ({
+                    code: p.code,
+                    name: p.name,
+                  }))}
+                  onSuccess={onSuccess}
+                  onValidityChange={onValidityChange}
+                  onSubmittingChange={setIsSubmitting}
+                />
+              )}
+            />
+          )}
         </div>
       </div>
     </>

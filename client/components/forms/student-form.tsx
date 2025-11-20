@@ -13,7 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
 import {
   Select,
   SelectContent,
@@ -70,6 +69,7 @@ export function StudentForm({
     year: "",
     gender: "",
   },
+  onSubmittingChange,
 }: {
   onSubmit: (values: StudentFormValues) => Promise<void>
   existingIds?: string[]
@@ -84,6 +84,7 @@ export function StudentForm({
     year: string
     gender: string
   }
+  onSubmittingChange?: (isSubmitting: boolean) => void
 }) {
   const schemaWithDuplicateCheck = studentSchema.extend({
     idNo: studentSchema.shape.idNo
@@ -116,11 +117,14 @@ export function StudentForm({
 
   async function handleSubmit(values: StudentFormValues) {
     try {
-      onSuccess?.()
+      onSubmittingChange?.(true)
       await onSubmit(values)
       form.reset()
-    } catch {
-      toast.error("Failed to add student")
+      onSuccess?.()
+    } catch (error) {
+      throw error
+    } finally {
+      onSubmittingChange?.(false)
     }
   }
 

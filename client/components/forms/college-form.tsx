@@ -13,7 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
 
 // defining the college schema using zod, required in each form
 export const collegeSchema = z.object({
@@ -46,12 +45,14 @@ export function CollegeForm({
   onSuccess,
   onValidityChange,
   defaultValues = { code: "", name: "" },
+  onSubmittingChange,
 }: {
   onSubmit: (values: CollegeFormValues) => Promise<void>
   existingCodes?: string[]
   onSuccess?: () => void
   onValidityChange?: (isValid: boolean) => void
   defaultValues?: { code: string; name: string }
+  onSubmittingChange?: (isSubmitting: boolean) => void
 }) {
   // extend (copies) the collegeSchema to add a custom validation
   const schemaWithDuplicateCheck = collegeSchema.extend({
@@ -104,11 +105,15 @@ export function CollegeForm({
 
   async function handleSubmit(values: CollegeFormValues) {
     try {
-      onSuccess?.()
+      onSubmittingChange?.(true)
       await onSubmit(values)
       form.reset()
-    } catch {
-      toast.error("Failed to add college")
+      onSuccess?.()
+    } catch (error) {
+      // Error toast handled by caller
+      throw error
+    } finally {
+      onSubmittingChange?.(false)
     }
   }
 
