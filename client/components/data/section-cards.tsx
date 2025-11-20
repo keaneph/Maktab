@@ -14,6 +14,14 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
+interface DailyMetric {
+  date: string
+  college: number
+  program: number
+  students: number
+  users: number
+}
+
 export function SectionCards({
   active,
 }: {
@@ -23,7 +31,7 @@ export function SectionCards({
   const activeClasses =
     "!shadow-xs !bg-gradient-to-br !from-primary/5 !to-primary/20"
 
-  const [metrics, setMetrics] = React.useState<any[] | null>(null)
+  const [metrics, setMetrics] = React.useState<DailyMetric[] | null>(null)
 
   React.useEffect(() => {
     const abortController = new AbortController()

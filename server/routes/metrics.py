@@ -14,7 +14,7 @@ def get_counts():
         college_result = supabase.table("colleges").select("code").execute()
         program_result = supabase.table("programs").select("code").execute()
         student_result = supabase.table("students").select("idNo").execute()
-        user_result = supabase.table("users").select("username").execute()
+        user_result = supabase.table("users").select("email").execute()
         
         return jsonify({
             "colleges": len(college_result.data) if college_result.data else 0,

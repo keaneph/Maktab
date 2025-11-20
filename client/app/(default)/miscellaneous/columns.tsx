@@ -25,9 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export type Miscellaneous = {
-  username: string
   email: string
-  dateLogged: string | null
 }
 
 // local component for confirming deletion
@@ -35,12 +33,12 @@ function DeleteDialog({
   open,
   onClose,
   onConfirm,
-  username,
+  email,
 }: {
   open: boolean
   onClose: () => void
   onConfirm: () => void
-  username: string
+  email: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -48,8 +46,8 @@ function DeleteDialog({
         <DialogHeader>
           <DialogTitle>Delete User</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <b>{username}</b>? This action
-            cannot be undone.
+            Are you sure you want to delete <b>{email}</b>? This action cannot
+            be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex justify-end gap-2">
@@ -136,13 +134,13 @@ function ActionsCell({
   table,
 }: {
   user: Miscellaneous
-  onDelete?: (username: string) => void
-  onBulkDelete?: (usernames: string[]) => void
+  onDelete?: (email: string) => void
+  onBulkDelete?: (email: string[]) => void
   table: Table<Miscellaneous>
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
   const [isBulkOpen, setIsBulkOpen] = React.useState(false)
-  const [pendingUsernames, setPendingUsernames] = React.useState<string[]>([])
+  const [pendingEmails, setPendingEmails] = React.useState<string[]>([])
   return (
     <>
       <DropdownMenu>
@@ -164,8 +162,8 @@ function ActionsCell({
             onClick={() => {
               const selected = table.getFilteredSelectedRowModel().rows
               if (selected.length > 0) {
-                const usernames = selected.map((r) => r.original.username)
-                setPendingUsernames(usernames)
+                const email = selected.map((r) => r.original.email)
+                setPendingEmails(email)
                 setIsBulkOpen(true)
               } else {
                 setIsDeleteOpen(true)
@@ -180,23 +178,23 @@ function ActionsCell({
       <DeleteDialog
         open={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
-        username={user.username}
-        onConfirm={() => onDelete?.(user.username)}
+        email={user.email}
+        onConfirm={() => onDelete?.(user.email)}
       />
       <BulkDeleteDialog
         open={isBulkOpen}
         onClose={() => setIsBulkOpen(false)}
-        count={pendingUsernames.length}
+        count={pendingEmails.length}
         noun="Users"
         onConfirm={async () => {
-          if (pendingUsernames.length === 0) return
+          if (pendingEmails.length === 0) return
           if (onBulkDelete) {
-            await onBulkDelete(pendingUsernames)
+            await onBulkDelete(pendingEmails)
           } else {
-            await Promise.all(pendingUsernames.map((u) => onDelete?.(u)))
+            await Promise.all(pendingEmails.map((u) => onDelete?.(u)))
           }
           table.resetRowSelection()
-          setPendingUsernames([])
+          setPendingEmails([])
         }}
       />
     </>
@@ -205,8 +203,8 @@ function ActionsCell({
 
 // main column definition
 export const columns = (
-  onDelete?: (username: string) => void,
-  onBulkDelete?: (usernames: string[]) => void
+  onDelete?: (email: string) => void,
+  onBulkDelete?: (email: string[]) => void
 ): ColumnDef<Miscellaneous>[] => [
   {
     id: "select",
@@ -229,20 +227,6 @@ export const columns = (
     ),
   },
   {
-    accessorKey: "username",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Username
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-  },
-  {
     accessorKey: "email",
     header: ({ column }) => {
       return (
@@ -251,20 +235,6 @@ export const columns = (
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-  },
-  {
-    accessorKey: "dateLogged",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Date Logged In
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )

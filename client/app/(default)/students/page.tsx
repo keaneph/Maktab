@@ -1,9 +1,7 @@
 "use client"
 
-import * as React from "react"
-import { authFetch } from "@/lib/api"
+import React from "react"
 import { SiteHeader } from "@/components/layout/site-header"
-import { Programs } from "../programs/columns"
 import { Students, columns } from "./columns"
 import { DataTable } from "@/components/data/data-table"
 import { SectionCards } from "@/components/data/section-cards"
@@ -11,104 +9,62 @@ import { StudentForm } from "@/components/forms/student-form"
 import { useCounts } from "@/components/data/counts-context"
 import { toast } from "sonner"
 
+import {
+  getStudents,
+  addStudent,
+  editStudent,
+  deleteStudent,
+  bulkDeleteStudents,
+} from "@/lib/student-service"
+
+import { getPrograms } from "@/lib/program-service"
+import { Programs } from "../programs/columns"
+
 export default function StudentsPage() {
-  const [studentData, setStudentData] = React.useState<Students[]>([])
-  const [programData, setProgramData] = React.useState<Programs[]>([])
+  const [students, setStudents] = React.useState<Students[]>([])
+  const [programs, setPrograms] = React.useState<Programs[]>([])
   const { refreshCounts } = useCounts()
 
-  const fetchStudents = React.useCallback(async (init?: RequestInit) => {
-    const res = await fetch("http://localhost:8080/api/students/", init)
-    if (!res.ok) {
-      const message = await res.text().catch(() => "")
-      throw new Error(message || "Failed to fetch students")
-    }
-    return (await res.json()) as Students[]
-  }, [])
-
-  const fetchPrograms = React.useCallback(async (init?: RequestInit) => {
-    const res = await fetch("http://localhost:8080/api/programs/", init)
-    if (!res.ok) {
-      const message = await res.text().catch(() => "")
-      throw new Error(message || "Failed to fetch programs")
-    }
-    return (await res.json()) as Programs[]
-  }, [])
-
-  // Fetch only what we need: programs (for form dropdown) and students (for table)
+  // Initial load
   React.useEffect(() => {
-    const abortController = new AbortController()
-    
-    async function fetchData() {
-      try {
-        const students = await fetchStudents({
-          signal: abortController.signal,
-        })
-        if (!abortController.signal.aborted) {
-          setStudentData(students)
-        }
-        const programs = await fetchPrograms({
-          signal: abortController.signal,
-        })
-        if (!abortController.signal.aborted) {
-          setProgramData(programs)
-        }
-      } catch (error) {
-        if (abortController.signal.aborted) return
-        const err = error as Error
-        toast.error(`Error fetching data: ${err.message}`)
-      }
-    }
-    fetchData()
-    
-    return () => {
-      abortController.abort()
-    }
+    loadData()
   }, [])
 
-  // Refetch function
-  const refetchData = React.useCallback(async () => {
+  async function loadData() {
     try {
-      const students = await fetchStudents()
-      setStudentData(students)
-      const programs = await fetchPrograms()
-      setProgramData(programs)
-      // Refresh counts after data changes
-      await refreshCounts()
-    } catch (error) {
-      const err = error as Error
-      toast.error(`Error fetching data: ${err.message}`)
+      const [s, p] = await Promise.all([getStudents(), getPrograms()])
+      setStudents(s)
+      setPrograms(p)
+    } catch (err) {
+      toast.error(`Error fetching data: ${(err as Error).message}`)
     }
-  }, [refreshCounts])
+  }
 
-  async function handleAdd(values: {
+  async function refresh() {
+    await loadData()
+    await refreshCounts()
+  }
+
+  const handleAdd = async (values: {
     idNo: string
     firstName: string
     lastName: string
     course: string
     year: string
     gender: string
-  }) {
+  }) => {
     try {
-      const newItem = { ...values, year: parseInt(values.year) }
-      const res = await authFetch("http://localhost:8080/api/students/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(newItem),
-      })
-      if (!res.ok) throw new Error("Failed to add student")
-      await refetchData()
+      await addStudent(values)
+      await refresh()
       toast.success("Student added successfully!")
-    } catch (error) {
-      const err = error as Error
-      toast.error(`Failed to add student: ${err.message}`)
-      throw error
+    } catch (err) {
+      toast.error(`Failed to add student: ${(err as Error).message}`)
     }
   }
 
-  async function handleEdit(
+  const handleEdit = async (
     oldId: string,
-    data: {
+    values: {
       idNo: string
       firstName: string
       lastName: string
@@ -116,97 +72,56 @@ export default function StudentsPage() {
       year: string
       gender: string
     }
-  ) {
+  ) => {
     try {
-      const payload = {
-        ...data,
-        year: parseInt(data.year),
-      }
-      const res = await authFetch(
-        `http://localhost:8080/api/students/${oldId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        }
-      )
-      if (!res.ok) throw new Error("Failed to update student")
-      await refetchData()
-      toast.success("Student updated successfully!")
-    } catch (error) {
-      const err = error as Error
-      toast.error(`Failed to update student: ${err.message}`)
-      throw error
+      await editStudent(oldId, values)
+      await refresh()
+      toast.success("Student updated!")
+    } catch (err) {
+      toast.error(`Failed to update student: ${(err as Error).message}`)
     }
   }
 
-  async function handleDelete(id_no: string) {
+  const handleDelete = async (id: string) => {
     try {
-      const res = await authFetch(
-        `http://localhost:8080/api/students/${id_no}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      )
-      if (!res.ok) throw new Error("Failed to delete student")
-      await refetchData()
-      toast.success("Student deleted successfully!")
-    } catch (error) {
-      const err = error as Error
-      toast.error(`Failed to delete student: ${err.message}`)
-      throw error
+      await deleteStudent(id)
+      await refresh()
+      toast.success("Student deleted!")
+    } catch (err) {
+      toast.error(`Failed to delete student: ${(err as Error).message}`)
     }
   }
 
-  async function handleBulkDelete(ids: string[]) {
+  const handleBulkDelete = async (ids: string[]) => {
     try {
-      await Promise.all(
-        ids.map((id) =>
-          authFetch(`http://localhost:8080/api/students/${id}`, {
-            method: "DELETE",
-            credentials: "include",
-          })
-        )
-      )
-      await refetchData()
-      toast.success(`${ids.length} student(s) deleted successfully!`)
-    } catch (error) {
-      const err = error as Error
-      toast.error(`Failed to delete students: ${err.message}`)
-      throw error
+      await bulkDeleteStudents(ids)
+      await refresh()
+      toast.success(`${ids.length} student(s) deleted!`)
+    } catch (err) {
+      toast.error(`Failed to delete students: ${(err as Error).message}`)
     }
   }
 
   return (
     <>
       <SiteHeader title="Students" />
+
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <SectionCards active="student" />
+
         <div className="px-4 lg:px-6">
-          <DataTable<
-            Students,
-            unknown,
-            Pick<
-              Students,
-              "idNo" | "firstName" | "lastName" | "course" | "year" | "gender"
-            >
-          >
+          <DataTable
             columns={columns(
               handleDelete,
               handleEdit,
-              programData.map((p: Programs) => ({
-                code: p.code,
-                name: p.name,
-              })),
-              studentData.map((s: Students) => s.idNo.toUpperCase()),
+              programs.map((p) => ({ code: p.code, name: p.name })),
+              students.map((s) => s.idNo.toUpperCase()),
               handleBulkDelete
             )}
-            data={studentData}
+            data={students}
             searchPlaceholder="Search students..."
             addTitle="Add Student"
-            addDescription="Add a new student to the list."
+            addDescription="Add a new student"
             addFormId="student-form"
             searchKeys={[
               "idNo",
@@ -219,10 +134,8 @@ export default function StudentsPage() {
             renderAddForm={({ onSuccess, onValidityChange }) => (
               <StudentForm
                 onSubmit={handleAdd}
-                existingIds={studentData.map((s: Students) =>
-                  s.idNo.toUpperCase()
-                )}
-                programs={programData.map((p: Programs) => ({
+                existingIds={students.map((s) => s.idNo.toUpperCase())}
+                programs={programs.map((p) => ({
                   code: p.code,
                   name: p.name,
                 }))}

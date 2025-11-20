@@ -37,8 +37,16 @@ const chartConfig: ChartConfig = {
   },
 }
 
+interface DailyMetric {
+  date: string
+  college: number
+  program: number
+  students: number
+  users: number
+}
+
 export function ChartAreaInteractive() {
-  const [data, setData] = React.useState<any[] | null>(null)
+  const [data, setData] = React.useState<DailyMetric[] | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {

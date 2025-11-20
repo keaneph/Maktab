@@ -1,10 +1,13 @@
 "use client"
 
-import { ColumnDef, Table } from "@tanstack/react-table"
 import { ArrowUpDown, MoreVertical } from "lucide-react"
+
+import { ColumnDef, Table } from "@tanstack/react-table"
+
+import * as React from "react"
+
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import * as React from "react"
 import {
   Dialog,
   DialogContent,
@@ -14,7 +17,6 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog"
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,15 +25,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+
 import { CollegeForm } from "@/components/forms/college-form"
 
-// type definition
 export type Colleges = {
   code: string
   name: string
 }
 
-// local component for confirming deletion
 function DeleteDialog({
   open,
   onClose,

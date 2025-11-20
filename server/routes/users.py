@@ -7,27 +7,27 @@ users_bp = Blueprint("users", __name__, url_prefix="/api/users")
 
 def format_user_row(row):
     return {
-        "username": row["username"],
         "email": row["email"],
-        "dateLogged": row.get("date_logged"),
     }
 
+# TODO: change table to auth
+# TODO: change section cards as a global layout(?)
 # GET all users
 @users_bp.route("/", methods=["GET"])
 def list_users():
-    result = supabase.table("users").select("username, email, date_logged").execute()
+    result = supabase.table("users").select("email").execute()
     rows = result.data or []
     return jsonify([format_user_row(r) for r in rows]), 200
 
-# DELETE a user by username
-@users_bp.route("/<string:username>", methods=["DELETE"])
+# DELETE a user by email
+@users_bp.route("/<string:email>", methods=["DELETE"])
 @require_auth
-def delete_user(username: str):
+def delete_user(email: str):
     result = (
         supabase.table("users")
         .delete()
-        .eq("username", username)
-        .select("username, email, date_logged")
+        .eq(email)
+        .select("email")
         .execute()
     )
 

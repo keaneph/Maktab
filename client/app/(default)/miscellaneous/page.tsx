@@ -1,110 +1,73 @@
 "use client"
 
-import * as React from "react"
-import { authFetch } from "@/lib/api"
+import React from "react"
 import { toast } from "sonner"
 import { SiteHeader } from "@/components/layout/site-header"
-import { columns, Miscellaneous } from "./columns"
 import { DataTable } from "@/components/data/data-table"
 import { SectionCards } from "@/components/data/section-cards"
 import { useCounts } from "@/components/data/counts-context"
+import { Miscellaneous, columns } from "./columns"
+
+import {
+  getUsers,
+  deleteUser,
+  bulkDeleteUsers,
+} from "@/lib/miscellaneous-service"
 
 export default function MiscellaneousPage() {
   const [userData, setUserData] = React.useState<Miscellaneous[]>([])
   const { refreshCounts } = useCounts()
 
-  const fetchUsers = React.useCallback(async (init?: RequestInit) => {
-    const res = await fetch("http://localhost:8080/api/users/", init)
-    if (!res.ok) {
-      const message = await res.text().catch(() => "")
-      throw new Error(message || "Failed to fetch users")
-    }
-    return (await res.json()) as Miscellaneous[]
-  }, [])
-
-  // Fetch only what we need: users (for table)
+  // Load once
   React.useEffect(() => {
-    const abortController = new AbortController()
-    
-    async function fetchData() {
-      try {
-        const users = await fetchUsers({
-          signal: abortController.signal,
-        })
-        if (!abortController.signal.aborted) {
-          setUserData(users)
-        }
-      } catch (error) {
-        if (abortController.signal.aborted) return
-        const err = error as Error
-        toast.error(`Error fetching data: ${err.message}`)
-      }
-    }
-    fetchData()
-    
-    return () => {
-      abortController.abort()
-    }
+    loadUsers()
   }, [])
 
-  // Refetch function
-  const refetchData = React.useCallback(async () => {
+  async function loadUsers() {
     try {
-      const users = await fetchUsers()
-      setUserData(users)
-      // Refresh counts after data changes
-      await refreshCounts()
-    } catch (error) {
-      const err = error as Error
-      toast.error(`Error fetching data: ${err.message}`)
-    }
-  }, [refreshCounts])
-
-  async function handleDelete(username: string) {
-    try {
-      const res = await authFetch(
-        `http://localhost:8080/api/users/${username}`,
-        { method: "DELETE" }
-      )
-      if (!res.ok) throw new Error("Failed to delete user")
-      await refetchData()
-      toast.success("User deleted successfully")
-    } catch (error) {
-      const err = error as Error
-      toast.error(`Failed to delete user: ${err.message}`)
-      throw error
+      const data = await getUsers()
+      setUserData(data)
+    } catch (err) {
+      toast.error(`Error fetching users: ${(err as Error).message}`)
     }
   }
 
-  async function handleBulkDelete(usernames: string[]) {
+  async function refresh() {
+    await loadUsers()
+    await refreshCounts()
+  }
+
+  const handleDelete = async (email: string) => {
     try {
-      await Promise.all(
-        usernames.map((u) =>
-          authFetch(`http://localhost:8080/api/users/${u}`, {
-            method: "DELETE",
-          })
-        )
-      )
-      await refetchData()
-      toast.success(`${usernames.length} user(s) deleted successfully`)
-    } catch (error) {
-      const err = error as Error
-      toast.error(`Failed to delete users: ${err.message}`)
-      throw error
+      await deleteUser(email)
+      await refresh()
+      toast.success("User deleted successfully")
+    } catch (err) {
+      toast.error(`Failed to delete user: ${(err as Error).message}`)
+    }
+  }
+
+  const handleBulkDelete = async (email: string[]) => {
+    try {
+      await bulkDeleteUsers(email)
+      await refresh()
+      toast.success(`${email.length} user(s) deleted successfully`)
+    } catch (err) {
+      toast.error(`Failed to delete users: ${(err as Error).message}`)
     }
   }
 
   return (
     <>
-      <SiteHeader title="Miscellaneous" />
+      <SiteHeader title="Users" />
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <SectionCards active="miscellaneous" />
         <div className="px-4 lg:px-6">
           <DataTable
             columns={columns(handleDelete, handleBulkDelete)}
             data={userData}
+            searchKeys={["email"]}
             searchPlaceholder="Search users..."
-            searchKeys={["username", "email", "dateLogged"]}
             hideAddButton
           />
         </div>
