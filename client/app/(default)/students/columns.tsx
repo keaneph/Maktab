@@ -4,6 +4,7 @@ import { ColumnDef, Table } from "@tanstack/react-table"
 import { ArrowUpDown, Loader2, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import * as React from "react"
 import {
   Dialog,
@@ -24,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { StudentForm } from "@/components/forms/student-form"
+import { createClient } from "@/lib/client"
 
 export type Students = {
   idNo: string
@@ -32,6 +34,7 @@ export type Students = {
   course: string
   year: number
   gender: string
+  photo_path?: string
 }
 
 // local component for confirming deletion
@@ -120,6 +123,7 @@ function EditDialog({
     course: string
     year: string
     gender: string
+    photo_path?: string
   }) => void
   student: Students
   programs: Array<{ code: string; name: string }>
@@ -135,6 +139,7 @@ function EditDialog({
     course: string
     year: string
     gender: string
+    photo_path?: string
   }) {
     try {
       await onConfirm(values)
@@ -165,6 +170,7 @@ function EditDialog({
             course: student.course,
             year: student.year.toString(),
             gender: student.gender,
+            photo_path: student.photo_path,
           }}
         />
 
@@ -266,6 +272,39 @@ function BulkDeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function PhotoCell({ student }: { student: Students }) {
+  const photoPath = student.photo_path
+  const [photoUrl, setPhotoUrl] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (photoPath) {
+      const supabase = createClient()
+      const { data } = supabase.storage
+        .from("student-photos")
+        .getPublicUrl(photoPath)
+
+      setPhotoUrl(data.publicUrl)
+    }
+  }, [photoPath])
+
+  const initials = `${student.firstName.charAt(0)}${student.lastName.charAt(0)}`
+
+  return (
+    <div className="flex justify-center">
+      <Avatar className="ring-border h-10 w-10 ring-2">
+        <AvatarImage
+          src={photoUrl || undefined}
+          alt={`${student.firstName} ${student.lastName}`}
+          className="object-cover"
+        />
+        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+    </div>
   )
 }
 
@@ -387,6 +426,7 @@ export const columns = (
       course: string
       year: string
       gender: string
+      photo_path?: string
     }
   ) => void,
   programs: Array<{ code: string; name: string }> = [],
@@ -412,6 +452,11 @@ export const columns = (
         aria-label="Select row"
       />
     ),
+  },
+  {
+    id: "photo",
+    header: () => <div className="flex justify-center">Photo</div>,
+    cell: ({ row }) => <PhotoCell student={row.original} />,
   },
   {
     accessorKey: "idNo",

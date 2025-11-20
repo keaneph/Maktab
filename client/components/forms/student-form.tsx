@@ -3,6 +3,7 @@
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { UploadIcon } from "lucide-react"
 import React from "react"
 import {
   Form,
@@ -20,6 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Dropzone } from "@/components/dropzone"
+import { useSupabaseUpload } from "@/hooks/use-supabase-upload"
 const currentYear = new Date().getFullYear()
 
 export const studentSchema = z.object({
@@ -51,6 +54,7 @@ export const studentSchema = z.object({
   course: z.string().min(1, { message: "Course is required" }),
   year: z.string().min(1, { message: "Year is required" }),
   gender: z.string().min(1, { message: "Gender is required" }),
+  photo_path: z.string().optional(),
 })
 
 export type StudentFormValues = z.infer<typeof studentSchema>
@@ -68,6 +72,7 @@ export function StudentForm({
     course: "",
     year: "",
     gender: "",
+    photo_path: "",
   },
   onSubmittingChange,
 }: {
@@ -83,9 +88,21 @@ export function StudentForm({
     course: string
     year: string
     gender: string
+    photo_path?: string
   }
   onSubmittingChange?: (isSubmitting: boolean) => void
 }) {
+  const [currentPhotoUrl, setCurrentPhotoUrl] = React.useState<string | null>(
+    null
+  )
+
+  const props = useSupabaseUpload({
+    bucketName: "student-photos",
+    path: `students/${defaultValues.idNo || "temp"}`,
+    allowedMimeTypes: ["image/*"],
+    maxFiles: 1,
+    maxFileSize: 1000 * 1000 * 6, // 6MB,
+  })
   const schemaWithDuplicateCheck = studentSchema.extend({
     idNo: studentSchema.shape.idNo
       .refine(
@@ -115,11 +132,52 @@ export function StudentForm({
     }
   }, [onValidityChange])
 
+  React.useEffect(() => {
+    async function loadCurrentPhoto() {
+      if (defaultValues.photo_path) {
+        const { createClient } = await import("@/lib/client")
+        const supabase = createClient()
+        const { data } = supabase.storage
+          .from("student-photos")
+          .getPublicUrl(defaultValues.photo_path)
+        setCurrentPhotoUrl(data.publicUrl)
+      }
+    }
+    loadCurrentPhoto()
+  }, [defaultValues.photo_path])
+
   async function handleSubmit(values: StudentFormValues) {
     try {
       onSubmittingChange?.(true)
-      await onSubmit(values)
+
+      // Upload photo if files are selected
+      let photoPath = defaultValues.photo_path || ""
+      if (props.files.length > 0) {
+        const studentPath = `students/${values.idNo}`
+        const file = props.files[0]
+
+        // Upload directly using Supabase client
+        const { createClient } = await import("@/lib/client")
+        const supabase = createClient()
+
+        const { error } = await supabase.storage
+          .from("student-photos")
+          .upload(`${studentPath}/${file.name}`, file, {
+            cacheControl: "3600",
+            upsert: false,
+          })
+
+        if (error) {
+          throw new Error(error.message)
+        }
+
+        photoPath = `${studentPath}/${file.name}`
+      }
+
+      // Submit form with photo path
+      await onSubmit({ ...values, photo_path: photoPath })
       form.reset()
+      props.setFiles([]) // Clear uploaded files
       onSuccess?.()
     } catch (error) {
       throw error
@@ -259,6 +317,89 @@ export function StudentForm({
             </FormItem>
           )}
         />
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Student Photo (Optional)
+          </label>
+          <Dropzone className="min-h-[200px]" {...props}>
+            {props.files.length === 0 && !currentPhotoUrl ? (
+              <div className="flex flex-col items-center justify-center gap-1 py-8 text-center">
+                <div className="mb-1 flex justify-center">
+                  <UploadIcon className="text-muted-foreground h-10 w-10" />
+                </div>
+                <div className="text-md mb-2 font-semibold">
+                  Upload Student Photo
+                </div>
+                <div className="text-sm">
+                  <p>
+                    Drag and drop or{" "}
+                    <button
+                      type="button"
+                      className="hover:text-foreground cursor-pointer underline transition"
+                      onClick={props.open}
+                    >
+                      select files
+                    </button>{" "}
+                    to upload
+                  </p>
+                </div>
+                <div className="text-muted-foreground text-sm">
+                  Maximum file size: 6MB
+                </div>
+              </div>
+            ) : props.files.length > 0 ? (
+              <div className="flex flex-col gap-4 p-4">
+                <div className="flex items-center gap-4">
+                  {props.files[0].type.startsWith("image/") && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={props.files[0].preview}
+                      alt="Preview"
+                      className="h-20 w-20 rounded-lg border object-cover"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{props.files[0].name}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {(props.files[0].size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => props.setFiles([])}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ) : currentPhotoUrl ? (
+              <div className="flex flex-col gap-4 p-4">
+                <div className="flex items-center gap-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentPhotoUrl}
+                    alt="Current photo"
+                    className="h-20 w-20 rounded-lg border object-cover"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Current Photo</p>
+                    <p className="text-muted-foreground text-xs">
+                      {defaultValues.photo_path?.split("/").pop()}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={props.open}
+                    className="text-primary text-sm hover:underline"
+                  >
+                    Change
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </Dropzone>
+        </div>
       </form>
     </Form>
   )

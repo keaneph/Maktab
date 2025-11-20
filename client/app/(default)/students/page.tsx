@@ -64,6 +64,7 @@ export default function StudentsPage() {
     course: string
     year: string
     gender: string
+    photo_path?: string
   }) => {
     try {
       await addStudent(values)
@@ -84,6 +85,7 @@ export default function StudentsPage() {
       course: string
       year: string
       gender: string
+      photo_path?: string
     }
   ) => {
     try {

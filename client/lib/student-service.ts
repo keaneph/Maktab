@@ -20,6 +20,7 @@ export async function addStudent(values: {
   course: string
   year: string
   gender: string
+  photo_path?: string
 }) {
   const payload = { ...values, year: parseInt(values.year) }
 
@@ -45,6 +46,7 @@ export async function editStudent(
     course: string
     year: string
     gender: string
+    photo_path?: string
   }
 ) {
   const payload = { ...values, year: parseInt(values.year) }

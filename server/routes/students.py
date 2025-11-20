@@ -12,6 +12,7 @@ def format_student_row(row):
         "course": row.get("course"),
         "year": row.get("year"),
         "gender": row.get("gender"),
+        "photo_path": row.get("photo_path"),
     }
 
 # GET all students
@@ -40,6 +41,7 @@ def create_student():
             "course": data.get("course"),
             "year": data.get("year"),
             "gender": data.get("gender"),
+            "photo_path": data.get("photo_path"),
         }
 
         result = supabase.table("students").insert(payload).execute()
@@ -65,6 +67,7 @@ def update_student(id_no):
             "course": data.get("course"),
             "year": data.get("year"),
             "gender": data.get("gender"),
+            "photo_path": data.get("photo_path"),
         }
 
         result = (
