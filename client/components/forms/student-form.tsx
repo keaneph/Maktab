@@ -347,14 +347,7 @@ export function StudentForm({
                     />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      {(() => {
-                        const name = props.files[0].name
-                        return name.length > 15
-                          ? name.slice(0, 15) + "..."
-                          : name
-                      })()}
-                    </p>
+                    <p className="text-sm font-medium">{props.files[0].name}</p>
                     <p className="text-muted-foreground text-xs">
                       {(props.files[0].size / 1024 / 1024).toFixed(2)} MB
                     </p>
@@ -380,13 +373,7 @@ export function StudentForm({
                   <div className="flex-1">
                     <p className="text-sm font-medium">Current Photo</p>
                     <p className="text-muted-foreground text-xs">
-                      {(() => {
-                        const name =
-                          defaultValues.photo_path?.split("/").pop() ?? ""
-                        return name.length > 15
-                          ? name.slice(0, 15) + "..."
-                          : name
-                      })()}
+                      {defaultValues.photo_path?.split("/").pop()}
                     </p>
                   </div>
                   <div className="flex gap-2">

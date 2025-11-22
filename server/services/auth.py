@@ -33,10 +33,6 @@ def get_user_from_request():
         return None
     
     try:
-        # Decode JWT token (without verification for now, or verify with Supabase JWT secret)
-        # Supabase JWT secret is typically the anon key, but for verification use the service role key
-        # For simplicity, we'll decode without verification and trust the token structure
-        # In production, you should verify the signature with Supabase's JWT secret
         decoded = jwt.decode(access_token, options={"verify_signature": False})
         
         user_email = decoded.get('email')

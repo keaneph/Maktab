@@ -74,7 +74,7 @@ Create a `.env` file in the `server/` directory (or set env vars in your shell).
 ```text
 PIPENV_VENV_IN_PROJECT=1
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-anon-or-service-role-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 ```
 
 ## Project layout (top-level)

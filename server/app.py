@@ -10,14 +10,12 @@ from services.auth import get_user_from_request
 
 app = Flask(__name__)
 
-# register blueprints FIRST
 app.register_blueprint(colleges_bp)
 app.register_blueprint(metrics_bp)
 app.register_blueprint(programs_bp)
 app.register_blueprint(students_bp)
 app.register_blueprint(users_bp)
 
-# apply CORS AFTER blueprints
 CORS(
     app,
     supports_credentials=True,
@@ -30,7 +28,7 @@ def load_user():
 
 @app.route("/api/home", methods=["GET"])
 def home():
-    return jsonify({"message": "Backend is working!"})
+    return jsonify({"message": "wakey wakey flask is awakey"})
 
 if __name__ == "__main__":
     app.run(debug=True)
