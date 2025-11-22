@@ -12,6 +12,6 @@ export const config = {
     "/colleges/:path*",
     "/programs/:path*",
     "/students/:path*",
-    "/miscellaneous/:path*",
+    "/users/:path*",
   ],
 }

@@ -7,6 +7,7 @@ import { SectionCards } from "@/components/data/section-cards"
 import { ProgramForm } from "@/components/forms/program-form"
 import { toast } from "sonner"
 import { useCounts } from "@/components/data/counts-context"
+import { useDailyMetrics } from "@/components/data/use-daily-metrics"
 import { TableSkeleton } from "@/components/data/table-skeleton"
 
 import { Colleges } from "../colleges/columns"
@@ -25,6 +26,7 @@ export default function ProgramsPage() {
   const [colleges, setColleges] = React.useState<Colleges[]>([])
   const [programs, setPrograms] = React.useState<Programs[]>([])
   const { refreshCounts } = useCounts()
+  const { refresh: refreshMetrics } = useDailyMetrics()
 
   const hasLoaded = React.useRef(false)
   const [isLoading, setIsLoading] = React.useState(true)
@@ -58,6 +60,7 @@ export default function ProgramsPage() {
   async function refresh() {
     await loadData()
     await refreshCounts()
+    await refreshMetrics()
   }
 
   const handleAdd = async (values: {

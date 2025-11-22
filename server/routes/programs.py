@@ -19,8 +19,9 @@ def get_programs():
         rows = result.data or []
         return jsonify([format_program_row(r) for r in rows]), 200
     except Exception as e:
-        print("Supabase GET programs error:", e)
-        return jsonify({"error": "Failed to fetch programs"}), 500
+        error_msg = f"Failed to fetch programs: {str(e)}"
+        print(f"Supabase GET programs error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # POST create a new program
@@ -41,8 +42,9 @@ def create_program():
 
         return jsonify(format_program_row(new_program)), 201
     except Exception as e:
-        print("Supabase CREATE program error:", e)
-        return jsonify({"error": "Failed to create program"}), 500
+        error_msg = f"Failed to create program: {str(e)}"
+        print(f"Supabase CREATE program error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # PUT update a program by code
@@ -68,8 +70,9 @@ def update_program(code):
         updated_program = result.data[0] if result.data else None
         return jsonify(format_program_row(updated_program)), 200
     except Exception as e:
-        print("Supabase UPDATE program error:", e)
-        return jsonify({"error": "Failed to update program"}), 500
+        error_msg = f"Failed to update program: {str(e)}"
+        print(f"Supabase UPDATE program error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # DELETE a program by code
@@ -87,5 +90,6 @@ def delete_program(code):
         deleted_program = result.data[0] if result.data else None
         return jsonify(format_program_row(deleted_program)), 200
     except Exception as e:
-        print("Supabase DELETE program error:", e)
+        error_msg = f"Failed to delete program: {str(e)}"
+        print(f"Supabase DELETE program error: {e}")
         return jsonify({"error": "Failed to delete program"}), 500

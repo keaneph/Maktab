@@ -20,6 +20,7 @@ export async function addStudent(values: {
   course: string
   year: string
   gender: string
+  photo_path?: string
 }) {
   const payload = { ...values, year: parseInt(values.year) }
 
@@ -45,6 +46,7 @@ export async function editStudent(
     course: string
     year: string
     gender: string
+    photo_path?: string
   }
 ) {
   const payload = { ...values, year: parseInt(values.year) }
@@ -75,18 +77,14 @@ export async function deleteStudent(idNo: string) {
 }
 
 export async function bulkDeleteStudents(ids: string[]) {
-  const promises = ids.map((id) =>
-    authFetch(`${BASE_URL}${id}`, {
-      method: "DELETE",
-      credentials: "include",
-    })
-  )
+  const res = await authFetch(`${apiUrl("/api/students/bulk-delete")}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids }),
+  })
 
-  const results = await Promise.all(promises)
-
-  const failed = results.find((r) => !r.ok)
-  if (failed) {
-    const message = await failed.text().catch(() => "")
-    throw new Error(message || "Failed to delete one or more students")
+  if (!res.ok) {
+    const message = await res.text().catch(() => "")
+    throw new Error(message || "Failed to bulk delete students")
   }
 }

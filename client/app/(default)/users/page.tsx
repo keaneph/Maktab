@@ -5,19 +5,12 @@ import { toast } from "sonner"
 import { SiteHeader } from "@/components/layout/site-header"
 import { DataTable } from "@/components/data/data-table"
 import { SectionCards } from "@/components/data/section-cards"
-import { useCounts } from "@/components/data/counts-context"
-import { Miscellaneous, columns } from "./columns"
+import { Users, columns } from "./columns"
 import { TableSkeleton } from "@/components/data/table-skeleton"
+import { getUsers } from "@/lib/user-service"
 
-import {
-  getUsers,
-  deleteUser,
-  bulkDeleteUsers,
-} from "@/lib/miscellaneous-service"
-
-export default function MiscellaneousPage() {
-  const [userData, setUserData] = React.useState<Miscellaneous[]>([])
-  const { refreshCounts } = useCounts()
+export default function UsersPage() {
+  const [userData, setUserData] = React.useState<Users[]>([])
   const hasLoaded = React.useRef(false)
   const [isLoading, setIsLoading] = React.useState(true)
 
@@ -43,44 +36,17 @@ export default function MiscellaneousPage() {
     }
   }
 
-  async function refresh() {
-    await loadUsers()
-    await refreshCounts()
-  }
-
-  const handleDelete = async (email: string) => {
-    try {
-      await deleteUser(email)
-      await refresh()
-      toast.success("User deleted successfully")
-    } catch (err) {
-      toast.error(`Failed to delete user: ${(err as Error).message}`)
-      throw err
-    }
-  }
-
-  const handleBulkDelete = async (email: string[]) => {
-    try {
-      await bulkDeleteUsers(email)
-      await refresh()
-      toast.success(`${email.length} user(s) deleted successfully`)
-    } catch (err) {
-      toast.error(`Failed to delete users: ${(err as Error).message}`)
-      throw err
-    }
-  }
-
   return (
     <>
       <SiteHeader title="Users" />
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <SectionCards active="miscellaneous" />
+        <SectionCards active="users" />
         <div className="px-4 lg:px-6">
           {isLoading ? (
             <TableSkeleton rows={5} />
           ) : (
             <DataTable
-              columns={columns(handleDelete, handleBulkDelete)}
+              columns={columns}
               data={userData}
               searchKeys={["email"]}
               searchPlaceholder="Search users..."
