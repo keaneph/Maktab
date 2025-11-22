@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000"
 
 export function apiUrl(path: string) {
   if (!path.startsWith("/")) {
@@ -7,4 +7,3 @@ export function apiUrl(path: string) {
   }
   return `${API_BASE_URL}${path}`
 }
-

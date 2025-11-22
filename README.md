@@ -1,72 +1,148 @@
-# Maktab
+<h1 align="center">
+  Maktab - Student Information System
 
-A modern Student Information System built with Flask (Python) for the backend and Next.js (React) for the frontend. UI is powered by Tailwind CSS and ShadCN.
+![status](https://img.shields.io/badge/status-DONE-green?)
+![GitHub last commit](https://img.shields.io/github/last-commit/keaneph/Maktab?)
+![Next.js](https://img.shields.io/badge/Next.js-15-white?&logo=next.js)
+![React](https://img.shields.io/badge/React-19-61DAFB?&logo=react&logoColor=blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?&logo=typescript)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38BDF8?&logo=tailwind-css)
+![Python](https://img.shields.io/badge/Python-3.13-yellow?&logo=python)
+![Flask](https://img.shields.io/badge/Flask-3-lightblue?&logo=flask)
+![Supabase](https://img.shields.io/badge/Supabase-Database_&_Auth-3ECF8E?&logo=supabase)
 
-## Features
+</h1>
 
-- Data tables for Colleges, Programs, Students, and Users
-  - Row selection, select-all, sorting, search, pagination
-  - Single-row actions (Edit, Delete) as well as bulk delete
-- Forms with validation (zod + react-hook-form)
-- Dashboard with charts and quick metrics
-- Session-aware requests (CORS with credentials)
+A web application for managing student information. It includes a modern Next.js + React frontend and a Flask backend that integrates with Supabase for authentication, and storage.
 
-## Tech Stack
+## Key features
 
-- Backend: Flask
-- Database: PostgreSQL
-- Frontend: Next.js, Tailwind CSS, ShadCN UI, TanStack Table
+- Next.js 15 + React 19 frontend (TypeScript)
+- Flask backend (Python 3.13) providing API endpoints and Supabase integration
+- Supabase for auth, realtime, and Postgres storage
+- Tailwind CSS for styling and a collection of reusable UI components
 
-## Dashboard Demo
+## Who should read this
+
+This README is focused on developers who want to run the project locally, contribute, or extend it. For API reference and user documentation, see the `client/` and `server/` source folders and any internal docs.
+
+---
+
+## Quick start — run locally (PowerShell)
+
+Prerequisites
+
+- Node.js 20+ (for the `client`)
+- Python 3.13 (for the `server`)
+- pipenv (optional; you can also use plain venv + pip)
+
+Open two terminals (one for frontend, one for backend) and run:
+
+Frontend (client)
+
+```powershell
+cd client
+npm install
+npm run dev
+```
+
+The frontend dev server runs at http://localhost:3000 by default.
+
+Backend (server)
+
+If you use pipenv (recommended for parity with this repo):
+
+```powershell
+cd server
+pipenv install      # first time only
+pipenv shell
+python -m flask run # runs on http://localhost:5000
+exit                # leave the virtualenv
+```
+
+Or with a plain venv:
+
+```powershell
+cd server
+python -m venv .venv
+.\\.venv\\Scripts\\Activate.ps1
+pip install -r requirements.txt
+python -m flask run
+```
+
+**Environment variables**
+
+Create a `.env.local` file in the `client/` directory (or set env vars in your shell). Minimum vars used by the client:
+
+```text
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your-anon-key
+```
+
+Create a `.env` file in the `server/` directory (or set env vars in your shell). Minimum vars used by the server:
+
+```text
+PIPENV_VENV_IN_PROJECT=1
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-or-service-role-key
+```
+
+## Project layout (top-level)
+
+```
+README.md            # <- you are here
+client/              # Next.js frontend (TSX, Tailwind)
+server/              # Flask backend and API
+```
+
+## Development notes
+
+- Frontend tech highlights: Next.js 15, React 19, TypeScript 5, Tailwind CSS 4.
+- Backend tech highlights: Flask, Flask-CORS, python-dotenv, Supabase Python client.
+- See `client/package.json` for available npm scripts (dev, build, start, lint).
+- See `server/Pipfile` and `server/requirements.txt` for Python dependencies.
+- Theme system supports light/dark mode with custom color variants (Default, Blue, Green, Amber, and Mono).
+
+## Running production build
+
+Build frontend:
+
+```powershell
+cd client
+npm run build
+```
+
+Serve the frontend with `npm start` or deploy to a hosting provider. The backend can be run behind a WSGI server (e.g., Gunicorn) in production.
+
+## Dashboard demo
 
 ![dashboard_demo](https://github.com/user-attachments/assets/2026a418-ed4a-4699-8005-ffc8af3fcf46)
 
-## Getting Started
+## Where to get help
 
-### Prerequisites
+- Open an issue in this repository for bugs and feature requests.
+- Join developer discussions by creating issues or pull requests.
+- For environment-specific questions (Supabase etc.), consult their official docs.
 
-- Python 3.10+
-- Node.js 18+ (or 20+), npm
-- PostgreSQL (or Supabase) and connection URL
+## Contributing
 
-### Backend Setup (Flask)
+We welcome contributions. For contribution guidelines and the preferred PR process, see `CONTRIBUTING.md` in the repo root.
 
-1. Create and configure environment variables (e.g. with a `.env` or your shell):
+## Primary maintainers
 
-```
-PIPENV_VENV_IN_PROJECT=1
-SECRET_KEY=change-me
-DATABASE_URL=postgresql://user:pass@host:5432/dbname
-```
+- [@keaneph](https://github.com/keaneph) (GitHub repository owner)
 
-2. Install dependencies and run (Pipenv example):
+## Prior versions
 
-```
-cd backend
-pipenv install
-pipenv shell
-pipenv flask run
-```
+This is the third iteration of the student information system:
 
-### Frontend Setup (Next.js)
+- **Version 1**: [Gungnir](https://github.com/keaneph/Gungnir) – WPF + CSV
+- **Version 2**: [La Accademia](https://github.com/keaneph/La-Accademia) – WPF + MySQL
+- **Version 3**: **Maktab** (Current) – Next.js + Flask + Supabase
 
-The frontend currently calls the backend using absolute URLs like `http://localhost:8080/api/...`, so no frontend env is required for local dev.
+## Security & License
 
-```
-cd frontend
-npm ci
-npm run dev (for testing)
-npm run build, then npm run start (for prod)
-```
-
-## Prior Versions
-
-- Version 1: [Gungnir](https://github.com/keaneph/Gungnir) – WPF + CSV
-- Version 2: [La Accademia](https://github.com/keaneph/La-Accademia) – WPF + MySQL
-
-## License
-
-This project is licensed under the terms of the LICENSE file in this repository.
+If you discover a security vulnerability, please open a private issue or contact the maintainers. This repository contains a `LICENSE` file, contact the maintainers to clarify licensing.
 
 ## Acknowledgements
 
