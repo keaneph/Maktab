@@ -5,15 +5,12 @@ import { toast } from "sonner"
 import { SiteHeader } from "@/components/layout/site-header"
 import { DataTable } from "@/components/data/data-table"
 import { SectionCards } from "@/components/data/section-cards"
-import { useCounts } from "@/components/data/counts-context"
 import { Users, columns } from "./columns"
 import { TableSkeleton } from "@/components/data/table-skeleton"
-
-import { getUsers, deleteUser, bulkDeleteUsers } from "@/lib/user-service"
+import { getUsers } from "@/lib/user-service"
 
 export default function UsersPage() {
   const [userData, setUserData] = React.useState<Users[]>([])
-  const { refreshCounts } = useCounts()
   const hasLoaded = React.useRef(false)
   const [isLoading, setIsLoading] = React.useState(true)
 
@@ -39,33 +36,6 @@ export default function UsersPage() {
     }
   }
 
-  async function refresh() {
-    await loadUsers()
-    await refreshCounts()
-  }
-
-  const handleDelete = async (email: string) => {
-    try {
-      await deleteUser(email)
-      await refresh()
-      toast.success("User deleted successfully")
-    } catch (err) {
-      toast.error(`Failed to delete user: ${(err as Error).message}`)
-      throw err
-    }
-  }
-
-  const handleBulkDelete = async (email: string[]) => {
-    try {
-      await bulkDeleteUsers(email)
-      await refresh()
-      toast.success(`${email.length} user(s) deleted successfully`)
-    } catch (err) {
-      toast.error(`Failed to delete users: ${(err as Error).message}`)
-      throw err
-    }
-  }
-
   return (
     <>
       <SiteHeader title="Users" />
@@ -76,7 +46,7 @@ export default function UsersPage() {
             <TableSkeleton rows={5} />
           ) : (
             <DataTable
-              columns={columns(handleDelete, handleBulkDelete)}
+              columns={columns}
               data={userData}
               searchKeys={["email"]}
               searchPlaceholder="Search users..."
