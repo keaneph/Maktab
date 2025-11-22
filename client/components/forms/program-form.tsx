@@ -153,7 +153,7 @@ export function ProgramForm({
               <FormLabel>College</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full cursor-pointer">
                     <SelectValue placeholder="Select a college" />
                   </SelectTrigger>
                 </FormControl>
@@ -166,7 +166,11 @@ export function ProgramForm({
                     />
                   </div>
                   {filteredColleges.map((c) => (
-                    <SelectItem key={c.code} value={c.code}>
+                    <SelectItem
+                      className="cursor-pointer"
+                      key={c.code}
+                      value={c.code}
+                    >
                       {c.name}{" "}
                       <span className="text-muted-foreground">({c.code})</span>
                     </SelectItem>

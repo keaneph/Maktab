@@ -19,7 +19,7 @@ def format_student_row(row):
 @students_bp.route("/", methods=["GET"])
 def get_students():
     try:
-        result = supabase.table("students").select("*").execute()
+        result = supabase.table("students").select("idNo,firstName,lastName,course,year,gender,photo_path").execute()
         rows = result.data or []
         return jsonify([format_student_row(r) for r in rows]), 200
     except Exception as e:
@@ -104,4 +104,29 @@ def delete_student(id_no):
     except Exception as e:
         error_msg = f"Failed to delete student: {str(e)}"
         print(f"Supabase DELETE student error: {e}")
+        return jsonify({"error": error_msg}), 500
+
+
+# BATCH DELETE students
+@students_bp.route("/bulk-delete", methods=["POST"])
+@require_auth
+def bulk_delete_students():
+    try:
+        data = request.get_json()
+        ids = data.get("ids", [])
+        
+        if not ids:
+            return jsonify({"error": "No IDs provided"}), 400
+        
+        result = (
+            supabase.table("students")
+            .delete()
+            .in_("idNo", ids)
+            .execute()
+        )
+        
+        return jsonify({"deleted": len(result.data) if result.data else 0}), 200
+    except Exception as e:
+        error_msg = f"Failed to bulk delete students: {str(e)}"
+        print(f"Supabase BULK DELETE students error: {e}")
         return jsonify({"error": error_msg}), 500

@@ -19,7 +19,7 @@ function ActionsCell({ user }: { user: Users }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
+        <Button variant="ghost" className="h-8 w-8 cursor-pointer p-0">
           <span className="sr-only">Open menu</span>
           <MoreVertical className="h-4 w-4" />
         </Button>
@@ -27,6 +27,7 @@ function ActionsCell({ user }: { user: Users }) {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuItem
+          className="cursor-pointer"
           onClick={() => navigator.clipboard.writeText(user.email)}
         >
           Copy user email
@@ -43,6 +44,7 @@ export const columns: ColumnDef<Users>[] = [
     header: ({ column }) => {
       return (
         <Button
+          className="cursor-pointer"
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >

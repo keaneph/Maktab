@@ -1,10 +1,8 @@
-import csv
 import random
-from datetime import datetime
 
 # Settings
 num_records = 300
-output_file = "students.csv"
+output_file = "students.sql"
 
 # Sample data
 firstnames = [
@@ -19,22 +17,18 @@ courses = ["BSCS", "BSIT", "BSIS", "BSECE", "BSMETE", "BSPSYCH", "BSPHILO", "BSM
 years = [1, 2, 3, 4]
 genders = ["Male", "Female"]
 
-# Current date
-datecreated = "10/15/2025"
-addedby = "admin"
-
-with open(output_file, mode="w", newline="", encoding="utf-8") as file:
-    writer = csv.writer(file)
-    writer.writerow(["idno", "firstname", "lastname", "course", "year", "gender", "datecreated", "addedby"])
-    
+with open(output_file, mode="w", encoding="utf-8") as file:
     for i in range(1, num_records + 1):
-        idno = f"2023-{i:04d}"
-        firstname = random.choice(firstnames)
-        lastname = random.choice(lastnames)
+        idNo = f"2025-{i:04d}"
+        firstName = random.choice(firstnames)
+        lastName = random.choice(lastnames)
         course = random.choice(courses)
         year = random.choice(years)
         gender = random.choice(genders)
         
-        writer.writerow([idno, firstname, lastname, course, year, gender, datecreated, addedby])
+        sql = f'INSERT INTO public.students ("idNo", "firstName", "lastName", "course", "year", "gender", "created_at", "photo_path")\n'
+        sql += f"VALUES ('{idNo}', '{firstName}', '{lastName}', '{course}', {year}, '{gender}', DEFAULT, '');\n\n"
+        
+        file.write(sql)
 
-print(f"Generated {num_records} records in {output_file}")
+print(f"Generated {num_records} SQL INSERT statements in {output_file}")

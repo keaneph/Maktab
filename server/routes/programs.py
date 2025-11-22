@@ -15,7 +15,7 @@ def format_program_row(row):
 @programs_bp.route("/", methods=["GET"])
 def get_programs():
     try:
-        result = supabase.table("programs").select("*").execute()
+        result = supabase.table("programs").select("code,name,college_code").execute()
         rows = result.data or []
         return jsonify([format_program_row(r) for r in rows]), 200
     except Exception as e:
@@ -93,3 +93,28 @@ def delete_program(code):
         error_msg = f"Failed to delete program: {str(e)}"
         print(f"Supabase DELETE program error: {e}")
         return jsonify({"error": "Failed to delete program"}), 500
+
+
+# BATCH DELETE programs
+@programs_bp.route("/bulk-delete", methods=["POST"])
+@require_auth
+def bulk_delete_programs():
+    try:
+        data = request.get_json()
+        codes = data.get("codes", [])
+        
+        if not codes:
+            return jsonify({"error": "No codes provided"}), 400
+        
+        result = (
+            supabase.table("programs")
+            .delete()
+            .in_("code", codes)
+            .execute()
+        )
+        
+        return jsonify({"deleted": len(result.data) if result.data else 0}), 200
+    except Exception as e:
+        error_msg = f"Failed to bulk delete programs: {str(e)}"
+        print(f"Supabase BULK DELETE programs error: {e}")
+        return jsonify({"error": error_msg}), 500

@@ -237,7 +237,7 @@ export function StudentForm({
               <FormLabel>Course</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full cursor-pointer">
                     <SelectValue placeholder="Select a course" />
                   </SelectTrigger>
                 </FormControl>
@@ -250,9 +250,17 @@ export function StudentForm({
                     />
                   </div>
                   {filteredPrograms.map((p) => (
-                    <SelectItem key={p.code} value={p.code}>
-                      {p.name}{" "}
-                      <span className="text-muted-foreground">({p.code})</span>
+                    <SelectItem
+                      className="cursor-pointer"
+                      key={p.code}
+                      value={p.code}
+                    >
+                      {(() => {
+                        const displayName = `${p.name} (${p.code})`
+                        return displayName.length > 50
+                          ? displayName.slice(0, 50) + "..."
+                          : displayName
+                      })()}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -269,15 +277,23 @@ export function StudentForm({
               <FormLabel>Year</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full cursor-pointer">
                     <SelectValue placeholder="Select year" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="1">1</SelectItem>
-                  <SelectItem value="2">2</SelectItem>
-                  <SelectItem value="3">3</SelectItem>
-                  <SelectItem value="4">4</SelectItem>
+                  <SelectItem className="cursor-pointer" value="1">
+                    1
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="2">
+                    2
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="3">
+                    3
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="4">
+                    4
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -292,13 +308,17 @@ export function StudentForm({
               <FormLabel>Gender</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full cursor-pointer">
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem className="cursor-pointer" value="Male">
+                    Male
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="Female">
+                    Female
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -349,10 +369,10 @@ export function StudentForm({
                   <div className="flex-1">
                     <p className="text-sm font-medium">
                       {(() => {
-                        const name = props.files[0].name
-                        return name.length > 15
-                          ? name.slice(0, 15) + "..."
-                          : name
+                        const fileName = props.files[0].name
+                        return fileName.length > 20
+                          ? fileName.slice(0, 20) + "..."
+                          : fileName
                       })()}
                     </p>
                     <p className="text-muted-foreground text-xs">
@@ -381,11 +401,11 @@ export function StudentForm({
                     <p className="text-sm font-medium">Current Photo</p>
                     <p className="text-muted-foreground text-xs">
                       {(() => {
-                        const name =
-                          defaultValues.photo_path?.split("/").pop() ?? ""
-                        return name.length > 15
-                          ? name.slice(0, 15) + "..."
-                          : name
+                        const fileName =
+                          defaultValues.photo_path?.split("/").pop() || ""
+                        return fileName.length > 15
+                          ? fileName.slice(0, 15) + "..."
+                          : fileName
                       })()}
                     </p>
                   </div>
