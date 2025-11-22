@@ -251,8 +251,12 @@ export function StudentForm({
                   </div>
                   {filteredPrograms.map((p) => (
                     <SelectItem key={p.code} value={p.code}>
-                      {p.name}{" "}
-                      <span className="text-muted-foreground">({p.code})</span>
+                      {(() => {
+                        const displayName = `${p.name} (${p.code})`
+                        return displayName.length > 50
+                          ? displayName.slice(0, 50) + "..."
+                          : displayName
+                      })()}
                     </SelectItem>
                   ))}
                 </SelectContent>
