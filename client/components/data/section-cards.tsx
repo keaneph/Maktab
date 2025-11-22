@@ -27,7 +27,7 @@ function computeDelta(current?: number, previous?: number) {
 export const SectionCards = React.memo(function SectionCards({
   active,
 }: {
-  active?: "college" | "program" | "student" | "miscellaneous"
+  active?: "college" | "program" | "student" | "users"
 }) {
   const { counts } = useCounts()
   const activeClasses =
@@ -151,7 +151,7 @@ export const SectionCards = React.memo(function SectionCards({
         </CardFooter>
       </Card>
       <Card
-        className={`@container/card ${active === "miscellaneous" ? activeClasses : ""}`}
+        className={`@container/card ${active === "users" ? activeClasses : ""}`}
       >
         <CardHeader>
           <CardDescription>Total Users</CardDescription>
@@ -159,7 +159,7 @@ export const SectionCards = React.memo(function SectionCards({
             {counts.users}
           </CardTitle>
           <CardAction>
-            <Link href="/miscellaneous">
+            <Link href="/users">
               <Badge variant="outline">
                 <ExternalLink /> View
               </Badge>

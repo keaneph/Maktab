@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export type Miscellaneous = {
+export type Users = {
   email: string
 }
 
@@ -171,10 +171,10 @@ function ActionsCell({
   onBulkDelete,
   table,
 }: {
-  user: Miscellaneous
+  user: Users
   onDelete?: (email: string) => void
   onBulkDelete?: (email: string[]) => void
-  table: Table<Miscellaneous>
+  table: Table<Users>
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false)
   const [isBulkOpen, setIsBulkOpen] = React.useState(false)
@@ -243,7 +243,7 @@ function ActionsCell({
 export const columns = (
   onDelete?: (email: string) => void,
   onBulkDelete?: (email: string[]) => void
-): ColumnDef<Miscellaneous>[] => [
+): ColumnDef<Users>[] => [
   {
     id: "select",
     header: ({ table }) => (

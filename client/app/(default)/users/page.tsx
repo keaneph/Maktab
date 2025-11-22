@@ -6,17 +6,13 @@ import { SiteHeader } from "@/components/layout/site-header"
 import { DataTable } from "@/components/data/data-table"
 import { SectionCards } from "@/components/data/section-cards"
 import { useCounts } from "@/components/data/counts-context"
-import { Miscellaneous, columns } from "./columns"
+import { Users, columns } from "./columns"
 import { TableSkeleton } from "@/components/data/table-skeleton"
 
-import {
-  getUsers,
-  deleteUser,
-  bulkDeleteUsers,
-} from "@/lib/miscellaneous-service"
+import { getUsers, deleteUser, bulkDeleteUsers } from "@/lib/user-service"
 
-export default function MiscellaneousPage() {
-  const [userData, setUserData] = React.useState<Miscellaneous[]>([])
+export default function UsersPage() {
+  const [userData, setUserData] = React.useState<Users[]>([])
   const { refreshCounts } = useCounts()
   const hasLoaded = React.useRef(false)
   const [isLoading, setIsLoading] = React.useState(true)
@@ -74,7 +70,7 @@ export default function MiscellaneousPage() {
     <>
       <SiteHeader title="Users" />
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <SectionCards active="miscellaneous" />
+        <SectionCards active="users" />
         <div className="px-4 lg:px-6">
           {isLoading ? (
             <TableSkeleton rows={5} />

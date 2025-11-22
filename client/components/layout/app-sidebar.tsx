@@ -10,7 +10,7 @@ import {
   School,
   GraduationCap,
   User,
-  Settings,
+  UsersRound,
 } from "lucide-react"
 
 import {
@@ -48,9 +48,9 @@ const items = [
     icon: User,
   },
   {
-    title: "Miscellaneous",
-    url: "/miscellaneous",
-    icon: Settings,
+    title: "Users",
+    url: "/users",
+    icon: UsersRound,
   },
 ]
 
