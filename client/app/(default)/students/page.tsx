@@ -7,6 +7,7 @@ import { DataTable } from "@/components/data/data-table"
 import { SectionCards } from "@/components/data/section-cards"
 import { StudentForm } from "@/components/forms/student-form"
 import { useCounts } from "@/components/data/counts-context"
+import { useDailyMetrics } from "@/components/data/use-daily-metrics"
 import { toast } from "sonner"
 import { TableSkeleton } from "@/components/data/table-skeleton"
 
@@ -25,6 +26,7 @@ export default function StudentsPage() {
   const [students, setStudents] = React.useState<Students[]>([])
   const [programs, setPrograms] = React.useState<Programs[]>([])
   const { refreshCounts } = useCounts()
+  const { refresh: refreshMetrics } = useDailyMetrics()
 
   const hasLoaded = React.useRef(false)
   const [isLoading, setIsLoading] = React.useState(true)
@@ -55,6 +57,7 @@ export default function StudentsPage() {
   async function refresh() {
     await loadData()
     await refreshCounts()
+    await refreshMetrics()
   }
 
   const handleAdd = async (values: {

@@ -38,6 +38,8 @@ def daily_metrics():
 
     today = date.today()
     start = today - timedelta(days=6)
+    # Include the entire day by adding one day and using lt instead of lte
+    end = today + timedelta(days=1)
 
     # Build buckets
     days = [(start + timedelta(days=i)).isoformat() for i in range(7)]
@@ -50,7 +52,7 @@ def daily_metrics():
                 supabase.table(table_name)
                 .select("created_at")
                 .gte("created_at", start.isoformat())
-                .lte("created_at", today.isoformat())
+                .lt("created_at", end.isoformat())
                 .execute()
             )
             rows = resp.data or []
