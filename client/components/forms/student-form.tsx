@@ -93,8 +93,9 @@ export function StudentForm({
   }
   onSubmittingChange?: (isSubmitting: boolean) => void
 }) {
+  const [isPhotoRemoved, setIsPhotoRemoved] = React.useState(false)
   const { photoUrl: currentPhotoUrl } = useStudentPhoto(
-    defaultValues.photo_path
+    isPhotoRemoved ? null : defaultValues.photo_path
   )
 
   const props = useSupabaseUpload({
@@ -138,7 +139,7 @@ export function StudentForm({
       onSubmittingChange?.(true)
 
       // Upload photo if files are selected
-      let photoPath = defaultValues.photo_path || ""
+      let photoPath = values.photo_path || ""
       if (props.files.length > 0) {
         const studentPath = `students/${values.idNo}`
         const file = props.files[0]
@@ -151,7 +152,7 @@ export function StudentForm({
           .from("student-photos")
           .upload(`${studentPath}/${file.name}`, file, {
             cacheControl: "3600",
-            upsert: false,
+            upsert: true,
           })
 
         if (error) {
@@ -375,13 +376,26 @@ export function StudentForm({
                       {defaultValues.photo_path?.split("/").pop()}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={props.open}
-                    className="text-primary text-sm hover:underline"
-                  >
-                    Change
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={props.open}
+                      className="text-primary cursor-pointer text-sm hover:underline"
+                    >
+                      Change
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        props.setFiles([])
+                        form.setValue("photo_path", "")
+                        setIsPhotoRemoved(true)
+                      }}
+                      className="text-destructive cursor-pointer text-sm hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : null}
