@@ -14,7 +14,7 @@ def format_college_row(row):
 @colleges_bp.route("/", methods=["GET"])
 def get_colleges():
     try:
-        result = supabase.table("colleges").select("*").execute()
+        result = supabase.table("colleges").select("code,name").execute()
         rows = result.data or []
         return jsonify([format_college_row(r) for r in rows]), 200
     except Exception as e:
@@ -89,4 +89,29 @@ def delete_college(code):
     except Exception as e:
         error_msg = f"Failed to delete college: {str(e)}"
         print(f"Supabase DELETE college error: {e}")
+        return jsonify({"error": error_msg}), 500
+
+
+# BATCH DELETE colleges
+@colleges_bp.route("/bulk-delete", methods=["POST"])
+@require_auth
+def bulk_delete_colleges():
+    try:
+        data = request.get_json()
+        codes = data.get("codes", [])
+        
+        if not codes:
+            return jsonify({"error": "No codes provided"}), 400
+        
+        result = (
+            supabase.table("colleges")
+            .delete()
+            .in_("code", codes)
+            .execute()
+        )
+        
+        return jsonify({"deleted": len(result.data) if result.data else 0}), 200
+    except Exception as e:
+        error_msg = f"Failed to bulk delete colleges: {str(e)}"
+        print(f"Supabase BULK DELETE colleges error: {e}")
         return jsonify({"error": error_msg}), 500

@@ -51,17 +51,14 @@ export async function deleteCollege(code: string) {
 }
 
 export async function bulkDeleteColleges(codes: string[]) {
-  const promises = codes.map((code) =>
-    authFetch(`${BASE_URL}${code}`, {
-      method: "DELETE",
-    })
-  )
+  const res = await authFetch(`${apiUrl("/api/colleges/bulk-delete")}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ codes }),
+  })
 
-  const results = await Promise.all(promises)
-
-  const failed = results.find((r) => !r.ok)
-  if (failed) {
-    const message = await failed.text().catch(() => "")
-    throw new Error(message || "Failed to delete one or more colleges")
+  if (!res.ok) {
+    const message = await res.text().catch(() => "")
+    throw new Error(message || "Failed to bulk delete colleges")
   }
 }
