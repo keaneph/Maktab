@@ -18,8 +18,9 @@ def get_colleges():
         rows = result.data or []
         return jsonify([format_college_row(r) for r in rows]), 200
     except Exception as e:
-        print("Supabase GET colleges error:", e)
-        return jsonify({"error": "Failed to fetch colleges"}), 500
+        error_msg = f"Failed to fetch colleges: {str(e)}"
+        print(f"Supabase GET colleges error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # POST create a new college
@@ -39,8 +40,9 @@ def create_college():
 
         return jsonify(format_college_row(new_row)), 201
     except Exception as e:
-        print("Supabase CREATE college error:", e)
-        return jsonify({"error": "Failed to create college"}), 500
+        error_msg = f"Failed to create college: {str(e)}"
+        print(f"Supabase CREATE college error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # PUT update a college by code
@@ -65,8 +67,9 @@ def update_college(code):
         updated = result.data[0] if result.data else None
         return jsonify(format_college_row(updated)), 200
     except Exception as e:
-        print("Supabase UPDATE college error:", e)
-        return jsonify({"error": "Failed to update college"}), 500
+        error_msg = f"Failed to update college: {str(e)}"
+        print(f"Supabase UPDATE college error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # DELETE a college by code
@@ -84,5 +87,6 @@ def delete_college(code):
         deleted = result.data[0] if result.data else None
         return jsonify(format_college_row(deleted)), 200
     except Exception as e:
-        print("Supabase DELETE college error:", e)
-        return jsonify({"error": "Failed to delete college"}), 500
+        error_msg = f"Failed to delete college: {str(e)}"
+        print(f"Supabase DELETE college error: {e}")
+        return jsonify({"error": error_msg}), 500

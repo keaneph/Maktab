@@ -23,8 +23,9 @@ def get_students():
         rows = result.data or []
         return jsonify([format_student_row(r) for r in rows]), 200
     except Exception as e:
-        print("Supabase GET students error:", e)
-        return jsonify({"error": "Failed to fetch students"}), 500
+        error_msg = f"Failed to fetch students: {str(e)}"
+        print(f"Supabase GET students error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # POST create a new student
@@ -49,8 +50,9 @@ def create_student():
 
         return jsonify(format_student_row(new_student)), 201
     except Exception as e:
-        print("Supabase CREATE student error:", e)
-        return jsonify({"error": "Failed to create student"}), 500
+        error_msg = f"Failed to create student: {str(e)}"
+        print(f"Supabase CREATE student error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # PUT update a student by idNo
@@ -80,8 +82,9 @@ def update_student(id_no):
         updated_student = result.data[0] if result.data else None
         return jsonify(format_student_row(updated_student)), 200
     except Exception as e:
-        print("Supabase UPDATE student error:", e)
-        return jsonify({"error": "Failed to update student"}), 500
+        error_msg = f"Failed to update student: {str(e)}"
+        print(f"Supabase UPDATE student error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # DELETE a student by idNo
@@ -99,5 +102,6 @@ def delete_student(id_no):
         deleted_student = result.data[0] if result.data else None
         return jsonify(format_student_row(deleted_student)), 200
     except Exception as e:
-        print("Supabase DELETE student error:", e)
-        return jsonify({"error": "Failed to delete student"}), 500
+        error_msg = f"Failed to delete student: {str(e)}"
+        print(f"Supabase DELETE student error: {e}")
+        return jsonify({"error": error_msg}), 500

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import { Dropzone } from "@/components/dropzone"
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload"
+import { useStudentPhoto } from "@/hooks/use-student-photo"
 const currentYear = new Date().getFullYear()
 
 export const studentSchema = z.object({
@@ -92,8 +93,8 @@ export function StudentForm({
   }
   onSubmittingChange?: (isSubmitting: boolean) => void
 }) {
-  const [currentPhotoUrl, setCurrentPhotoUrl] = React.useState<string | null>(
-    null
+  const { photoUrl: currentPhotoUrl } = useStudentPhoto(
+    defaultValues.photo_path
   )
 
   const props = useSupabaseUpload({
@@ -131,20 +132,6 @@ export function StudentForm({
       onValidityChange?.(false)
     }
   }, [onValidityChange])
-
-  React.useEffect(() => {
-    async function loadCurrentPhoto() {
-      if (defaultValues.photo_path) {
-        const { createClient } = await import("@/lib/client")
-        const supabase = createClient()
-        const { data } = supabase.storage
-          .from("student-photos")
-          .getPublicUrl(defaultValues.photo_path)
-        setCurrentPhotoUrl(data.publicUrl)
-      }
-    }
-    loadCurrentPhoto()
-  }, [defaultValues.photo_path])
 
   async function handleSubmit(values: StudentFormValues) {
     try {

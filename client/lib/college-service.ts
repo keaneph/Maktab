@@ -6,16 +6,23 @@ const BASE_URL = `${apiUrl("/api/colleges")}/`
 
 export async function getColleges(): Promise<Colleges[]> {
   const res = await fetch(BASE_URL)
-  if (!res.ok) throw new Error("Failed to fetch colleges")
-  return await res.json()
+  if (!res.ok) {
+    const message = await res.text().catch(() => "")
+    throw new Error(message || "Failed to fetch colleges")
+  }
+  return res.json()
 }
 
 export async function addCollege(data: { code: string; name: string }) {
   const res = await authFetch(`${BASE_URL}`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error("Failed to add college")
+  if (!res.ok) {
+    const message = await res.text().catch(() => "")
+    throw new Error(message || "Failed to add college")
+  }
 }
 
 export async function editCollege(
@@ -24,18 +31,37 @@ export async function editCollege(
 ) {
   const res = await authFetch(`${BASE_URL}${oldCode}`, {
     method: "PUT",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error("Failed to update college")
+  if (!res.ok) {
+    const message = await res.text().catch(() => "")
+    throw new Error(message || "Failed to update college")
+  }
 }
 
 export async function deleteCollege(code: string) {
   const res = await authFetch(`${BASE_URL}${code}`, {
     method: "DELETE",
   })
-  if (!res.ok) throw new Error("Failed to delete college")
+  if (!res.ok) {
+    const message = await res.text().catch(() => "")
+    throw new Error(message || "Failed to delete college")
+  }
 }
 
 export async function bulkDeleteColleges(codes: string[]) {
-  await Promise.all(codes.map((c) => deleteCollege(c)))
+  const promises = codes.map((code) =>
+    authFetch(`${BASE_URL}${code}`, {
+      method: "DELETE",
+    })
+  )
+
+  const results = await Promise.all(promises)
+
+  const failed = results.find((r) => !r.ok)
+  if (failed) {
+    const message = await failed.text().catch(() => "")
+    throw new Error(message || "Failed to delete one or more colleges")
+  }
 }

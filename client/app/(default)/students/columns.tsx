@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { StudentForm } from "@/components/forms/student-form"
-import { createClient } from "@/lib/client"
+import { useStudentPhoto } from "@/hooks/use-student-photo"
 
 export type Students = {
   idNo: string
@@ -276,20 +276,7 @@ function BulkDeleteDialog({
 }
 
 function PhotoCell({ student }: { student: Students }) {
-  const photoPath = student.photo_path
-  const [photoUrl, setPhotoUrl] = React.useState<string | null>(null)
-
-  React.useEffect(() => {
-    if (photoPath) {
-      const supabase = createClient()
-      const { data } = supabase.storage
-        .from("student-photos")
-        .getPublicUrl(photoPath)
-
-      setPhotoUrl(data.publicUrl)
-    }
-  }, [photoPath])
-
+  const { photoUrl } = useStudentPhoto(student.photo_path)
   const initials = `${student.firstName.charAt(0)}${student.lastName.charAt(0)}`
 
   return (
