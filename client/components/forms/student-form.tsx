@@ -237,7 +237,7 @@ export function StudentForm({
               <FormLabel>Course</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full cursor-pointer">
                     <SelectValue placeholder="Select a course" />
                   </SelectTrigger>
                 </FormControl>
@@ -250,7 +250,11 @@ export function StudentForm({
                     />
                   </div>
                   {filteredPrograms.map((p) => (
-                    <SelectItem key={p.code} value={p.code}>
+                    <SelectItem
+                      className="cursor-pointer"
+                      key={p.code}
+                      value={p.code}
+                    >
                       {(() => {
                         const displayName = `${p.name} (${p.code})`
                         return displayName.length > 50
@@ -273,15 +277,23 @@ export function StudentForm({
               <FormLabel>Year</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full cursor-pointer">
                     <SelectValue placeholder="Select year" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="1">1</SelectItem>
-                  <SelectItem value="2">2</SelectItem>
-                  <SelectItem value="3">3</SelectItem>
-                  <SelectItem value="4">4</SelectItem>
+                  <SelectItem className="cursor-pointer" value="1">
+                    1
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="2">
+                    2
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="3">
+                    3
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="4">
+                    4
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -296,13 +308,17 @@ export function StudentForm({
               <FormLabel>Gender</FormLabel>
               <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full cursor-pointer">
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem className="cursor-pointer" value="Male">
+                    Male
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="Female">
+                    Female
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

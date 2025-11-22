@@ -283,7 +283,7 @@ function ActionsCell({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
+          <Button variant="ghost" className="h-8 w-8 cursor-pointer p-0">
             <span className="sr-only">Open menu</span>
             <MoreVertical className="h-4 w-4" />
           </Button>
@@ -291,15 +291,20 @@ function ActionsCell({
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem
+            className="cursor-pointer"
             onClick={() => navigator.clipboard.writeText(program.code)}
           >
             Copy program code
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => setIsEditOpen(true)}
+          >
             Edit program
           </DropdownMenuItem>
           <DropdownMenuItem
+            className="cursor-pointer"
             onClick={() => {
               const selected = table.getFilteredSelectedRowModel().rows
               if (selected.length > 0) {
@@ -366,6 +371,7 @@ export const columns = (
     id: "select",
     header: ({ table }) => (
       <Checkbox
+        className="cursor-pointer"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
@@ -376,6 +382,7 @@ export const columns = (
     ),
     cell: ({ row }) => (
       <Checkbox
+        className="cursor-pointer"
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
@@ -387,6 +394,7 @@ export const columns = (
     header: ({ column }) => {
       return (
         <Button
+          className="cursor-pointer"
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
@@ -401,6 +409,7 @@ export const columns = (
     header: ({ column }) => {
       return (
         <Button
+          className="cursor-pointer"
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
@@ -415,6 +424,7 @@ export const columns = (
     header: ({ column }) => {
       return (
         <Button
+          className="cursor-pointer"
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >

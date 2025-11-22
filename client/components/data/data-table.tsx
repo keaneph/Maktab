@@ -255,12 +255,16 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
               table.setPageSize(Number(value))
             }}
           >
-            <SelectTrigger className="h-8 w-[70px]">
+            <SelectTrigger className="h-8 w-[70px] cursor-pointer">
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
               {[10, 20, 25, 30, 40, 50].map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
+                <SelectItem
+                  className="cursor-pointer"
+                  key={pageSize}
+                  value={`${pageSize}`}
+                >
                   {pageSize}
                 </SelectItem>
               ))}
@@ -275,7 +279,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
           <Button
             variant="outline"
             size="icon"
-            className="hidden size-8 lg:flex"
+            className="hidden size-8 cursor-pointer lg:flex"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
@@ -285,7 +289,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
           <Button
             variant="outline"
             size="icon"
-            className="size-8"
+            className="size-8 cursor-pointer"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -295,7 +299,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
           <Button
             variant="outline"
             size="icon"
-            className="size-8"
+            className="size-8 cursor-pointer"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
@@ -305,7 +309,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
           <Button
             variant="outline"
             size="icon"
-            className="hidden size-8 lg:flex"
+            className="hidden size-8 cursor-pointer lg:flex"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
