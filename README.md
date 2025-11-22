@@ -60,16 +60,6 @@ python -m flask run # runs on http://localhost:5000
 exit                # leave the virtualenv
 ```
 
-Or with a plain venv:
-
-```powershell
-cd server
-python -m venv .venv
-.\\.venv\\Scripts\\Activate.ps1
-pip install -r requirements.txt
-python -m flask run
-```
-
 **Environment variables**
 
 Create a `.env.local` file in the `client/` directory (or set env vars in your shell). Minimum vars used by the client:
@@ -100,7 +90,7 @@ server/              # Flask backend and API
 - Frontend tech highlights: Next.js 15, React 19, TypeScript 5, Tailwind CSS 4.
 - Backend tech highlights: Flask, Flask-CORS, python-dotenv, Supabase Python client.
 - See `client/package.json` for available npm scripts (dev, build, start, lint).
-- See `server/Pipfile` and `server/requirements.txt` for Python dependencies.
+- See `server/Pipfile` for Python dependencies.
 - Theme system supports light/dark mode with custom color variants (Default, Blue, Green, Amber, and Mono).
 
 ## Running production build
