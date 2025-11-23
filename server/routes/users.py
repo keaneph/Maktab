@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify
 from services.supabase_client import supabase
-from services.auth import require_auth
 
 users_bp = Blueprint("users", __name__, url_prefix="/api/users")
 
