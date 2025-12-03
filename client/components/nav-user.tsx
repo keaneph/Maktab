@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useState } from "react"
 import { ChevronsUpDown, LogOut } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -18,13 +18,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { createClient } from "@/lib/client"
-import { useRouter } from "next/navigation"
 import { clearTokenCache } from "@/lib/api"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const router = useRouter()
-  const [, startTransition] = useTransition()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const [userInfo, setUserInfo] = useState({
@@ -64,12 +61,8 @@ export function NavUser() {
     setIsLoggingOut(true)
     try {
       const supabase = createClient()
-      await supabase.auth.signOut()
       clearTokenCache()
-      startTransition(() => {
-        router.push("/auth/login")
-        router.refresh()
-      })
+      await supabase.auth.signOut()
     } catch (error) {
       console.error("Logout failed:", error)
       setIsLoggingOut(false)

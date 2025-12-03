@@ -3,7 +3,6 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/themes/theme-provider"
 import { ActiveThemeProvider } from "@/components/themes/active-theme"
 import { Toaster } from "sonner"
-import { cookies } from "next/headers"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
@@ -11,23 +10,15 @@ export const metadata: Metadata = {
   description: "A student information system for CCC181",
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-  const activeThemeValue = cookieStore.get("theme")?.value
-  const isScaled = activeThemeValue?.endsWith("-scaled")
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={cn(
-          "bg-background overscroll-none font-sans antialiased",
-          activeThemeValue ? `theme-${activeThemeValue}` : "",
-          isScaled ? "theme-scaled" : ""
-        )}
+        className={cn("bg-background overscroll-none font-sans antialiased")}
       >
         <ThemeProvider
           attribute="class"
@@ -36,7 +27,7 @@ export default async function RootLayout({
           disableTransitionOnChange
           enableColorScheme
         >
-          <ActiveThemeProvider initialTheme={activeThemeValue}>
+          <ActiveThemeProvider>
             {children}
             <Toaster position="top-center" />
           </ActiveThemeProvider>
