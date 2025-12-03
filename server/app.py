@@ -1,16 +1,21 @@
 from flask import Flask, jsonify, g, send_from_directory, request
 from flask_cors import CORS
 import os
+import atexit
 from routes.colleges import colleges_bp
 from routes.programs import programs_bp
 from routes.students import students_bp
 from routes.users import users_bp
 from routes.metrics import metrics_bp
 from services.auth import get_user_from_request
+from services.database import close_pool
 
 CLIENT_BUILD_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'client', 'out'))
 
 app = Flask(__name__)
+
+# Register cleanup function to close database pool on shutdown
+atexit.register(close_pool)
 
 app.register_blueprint(colleges_bp)
 app.register_blueprint(metrics_bp)

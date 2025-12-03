@@ -1,27 +1,35 @@
 from flask import Blueprint, jsonify
 from datetime import date, timedelta
-from services.supabase_client import supabase
+from services.database import get_db_cursor
 
 metrics_bp = Blueprint("metrics", __name__, url_prefix="/api/metrics")
+
 
 @metrics_bp.route("/counts", methods=["GET"])
 def get_counts():
     """Return total counts for all tables - lightweight endpoint."""
     try:
-        # Use count parameter for efficient counting without fetching rows
-        college_result = supabase.table("colleges").select("*", count="exact").execute()
-        program_result = supabase.table("programs").select("*", count="exact").execute()
-        student_result = supabase.table("students").select("*", count="exact").execute()
-        user_result = supabase.table("users").select("*", count="exact").execute()
+        with get_db_cursor() as cur:
+            cur.execute('SELECT COUNT(*) as count FROM colleges')
+            college_count = cur.fetchone()['count']
+            
+            cur.execute('SELECT COUNT(*) as count FROM programs')
+            program_count = cur.fetchone()['count']
+            
+            cur.execute('SELECT COUNT(*) as count FROM students')
+            student_count = cur.fetchone()['count']
+            
+            cur.execute('SELECT COUNT(*) as count FROM users')
+            user_count = cur.fetchone()['count']
         
         return jsonify({
-            "colleges": college_result.count if college_result.count is not None else 0,
-            "programs": program_result.count if program_result.count is not None else 0,
-            "students": student_result.count if student_result.count is not None else 0,
-            "users": user_result.count if user_result.count is not None else 0,
+            "colleges": college_count,
+            "programs": program_count,
+            "students": student_count,
+            "users": user_count,
         }), 200
     except Exception as e:
-        print("Supabase GET counts error:", e)
+        print("Database GET counts error:", e)
         # Return zeros on error so UI doesn't break
         return jsonify({
             "colleges": 0,
@@ -29,6 +37,7 @@ def get_counts():
             "students": 0,
             "users": 0,
         }), 200
+
 
 @metrics_bp.route("/daily", methods=["GET"])
 def daily_metrics():
@@ -46,22 +55,24 @@ def daily_metrics():
     def get_daily_counts(table_name):
         """Return a dict of counts per day for the given table."""
         try:
-            resp = (
-                supabase.table(table_name)
-                .select("created_at")
-                .gte("created_at", start.isoformat())
-                .lt("created_at", end.isoformat())
-                .execute()
-            )
-            rows = resp.data or []
-
+            with get_db_cursor() as cur:
+                cur.execute(
+                    f'SELECT DATE(created_at) as day, COUNT(*) as count FROM {table_name} '
+                    'WHERE created_at >= %s AND created_at < %s '
+                    'GROUP BY DATE(created_at)',
+                    (start.isoformat(), end.isoformat())
+                )
+                rows = cur.fetchall()
+            
             counts = {}
             for row in rows:
-                d_str = row["created_at"][:10]
-                counts[d_str] = counts.get(d_str, 0) + 1
+                # Convert date to string if needed
+                day_str = row['day'].isoformat() if hasattr(row['day'], 'isoformat') else str(row['day'])
+                counts[day_str] = row['count']
             return counts
 
-        except Exception:
+        except Exception as e:
+            print(f"Database daily counts error for {table_name}: {e}")
             return {}
 
     college_counts = get_daily_counts("colleges")
