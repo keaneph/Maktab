@@ -1,37 +1,37 @@
-// app/(default)/layout.tsx
+"use client"
+
 import { AppSidebar } from "@/components/layout/app-sidebar"
-import { cookies } from "next/headers"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { CountsProvider } from "@/components/data/counts-context"
+import { AuthGuard } from "@/components/auth/auth-guard"
 
-export default async function DefaultLayout({
+export default function DefaultLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
-
   return (
-    <CountsProvider>
-      <SidebarProvider
-        defaultOpen={defaultOpen}
-        style={
-          {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
-          } as React.CSSProperties
-        }
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset>
-          <div className="flex flex-1 flex-col">
-            <div className="@container/main flex flex-1 flex-col gap-2">
-              {children}
+    <AuthGuard>
+      <CountsProvider>
+        <SidebarProvider
+          defaultOpen={true}
+          style={
+            {
+              "--sidebar-width": "calc(var(--spacing) * 72)",
+              "--header-height": "calc(var(--spacing) * 12)",
+            } as React.CSSProperties
+          }
+        >
+          <AppSidebar variant="inset" />
+          <SidebarInset>
+            <div className="flex flex-1 flex-col">
+              <div className="@container/main flex flex-1 flex-col gap-2">
+                {children}
+              </div>
             </div>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </CountsProvider>
+          </SidebarInset>
+        </SidebarProvider>
+      </CountsProvider>
+    </AuthGuard>
   )
 }

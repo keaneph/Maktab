@@ -124,9 +124,11 @@ export function StudentForm({
 
   const [search, setSearch] = React.useState("")
 
+  const hasDropzoneErrors = props.files.some((file) => file.errors.length > 0)
+
   React.useEffect(() => {
-    onValidityChange?.(form.formState.isValid)
-  }, [form.formState.isValid, onValidityChange])
+    onValidityChange?.(form.formState.isValid && !hasDropzoneErrors)
+  }, [form.formState.isValid, hasDropzoneErrors, onValidityChange])
 
   React.useEffect(() => {
     return () => {

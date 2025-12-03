@@ -1,26 +1,19 @@
 from flask import Blueprint, request, jsonify
-from services.supabase_client import supabase
 from services.auth import require_auth
+from services.business import program_service
 
 programs_bp = Blueprint("programs", __name__, url_prefix="/api/programs")
 
-def format_program_row(row):
-    return {
-        "code": row["code"],
-        "name": row["name"],
-        "college_code": row["college_code"],
-    }
 
 # GET all programs
 @programs_bp.route("/", methods=["GET"])
 def get_programs():
     try:
-        result = supabase.table("programs").select("code,name,college_code").execute()
-        rows = result.data or []
-        return jsonify([format_program_row(r) for r in rows]), 200
+        programs = program_service.get_all()
+        return jsonify(programs), 200
     except Exception as e:
         error_msg = f"Failed to fetch programs: {str(e)}"
-        print(f"Supabase GET programs error: {e}")
+        print(f"Database GET programs error: {e}")
         return jsonify({"error": error_msg}), 500
 
 
@@ -30,20 +23,11 @@ def get_programs():
 def create_program():
     try:
         data = request.get_json()
-
-        payload = {
-            "code": data["code"],
-            "name": data["name"],
-            "college_code": data["college_code"],
-        }
-
-        result = supabase.table("programs").insert(payload).execute()
-        new_program = result.data[0] if result.data else None
-
-        return jsonify(format_program_row(new_program)), 201
+        program = program_service.create(data["code"], data["name"], data["college_code"])
+        return jsonify(program), 201
     except Exception as e:
         error_msg = f"Failed to create program: {str(e)}"
-        print(f"Supabase CREATE program error: {e}")
+        print(f"Database CREATE program error: {e}")
         return jsonify({"error": error_msg}), 500
 
 
@@ -53,25 +37,17 @@ def create_program():
 def update_program(code):
     try:
         data = request.get_json()
-
-        payload = {
-            "code": data["code"],
-            "name": data["name"],
-            "college_code": data["college_code"],
-        }
-
-        result = (
-            supabase.table("programs")
-            .update(payload)
-            .eq("code", code)
-            .execute()
+        program = program_service.update(
+            code, data["code"], data["name"], data["college_code"]
         )
-
-        updated_program = result.data[0] if result.data else None
-        return jsonify(format_program_row(updated_program)), 200
+        
+        if not program:
+            return jsonify({"error": "Program not found"}), 404
+        
+        return jsonify(program), 200
     except Exception as e:
         error_msg = f"Failed to update program: {str(e)}"
-        print(f"Supabase UPDATE program error: {e}")
+        print(f"Database UPDATE program error: {e}")
         return jsonify({"error": error_msg}), 500
 
 
@@ -80,19 +56,16 @@ def update_program(code):
 @require_auth
 def delete_program(code):
     try:
-        result = (
-            supabase.table("programs")
-            .delete()
-            .eq("code", code)
-            .execute()
-        )
-
-        deleted_program = result.data[0] if result.data else None
-        return jsonify(format_program_row(deleted_program)), 200
+        program = program_service.delete(code)
+        
+        if not program:
+            return jsonify({"error": "Program not found"}), 404
+        
+        return jsonify(program), 200
     except Exception as e:
         error_msg = f"Failed to delete program: {str(e)}"
-        print(f"Supabase DELETE program error: {e}")
-        return jsonify({"error": "Failed to delete program"}), 500
+        print(f"Database DELETE program error: {e}")
+        return jsonify({"error": error_msg}), 500
 
 
 # BATCH DELETE programs
@@ -106,15 +79,9 @@ def bulk_delete_programs():
         if not codes:
             return jsonify({"error": "No codes provided"}), 400
         
-        result = (
-            supabase.table("programs")
-            .delete()
-            .in_("code", codes)
-            .execute()
-        )
-        
-        return jsonify({"deleted": len(result.data) if result.data else 0}), 200
+        deleted_count = program_service.bulk_delete(codes)
+        return jsonify({"deleted": deleted_count}), 200
     except Exception as e:
         error_msg = f"Failed to bulk delete programs: {str(e)}"
-        print(f"Supabase BULK DELETE programs error: {e}")
+        print(f"Database BULK DELETE programs error: {e}")
         return jsonify({"error": error_msg}), 500

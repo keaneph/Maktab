@@ -1,14 +1,13 @@
 from flask import request, g, jsonify
 from functools import wraps
-from services.supabase_client import supabase
 import jwt
-import os
 import json
+
 
 def get_user_from_request():
     """
-    Extract and verify Supabase user from request.
-    Returns user dict with email, username, etc. or None if not authenticated.
+    Extract and verify user from request JWT token.
+    Returns user dict with email and id, or None if not authenticated.
     """
     access_token = None
     
@@ -41,27 +40,15 @@ def get_user_from_request():
         if not user_email:
             return None
         
-        # Get username from users table if it exists
-        username = None
-        try:
-            users_result = supabase.table('users').select('username').eq('email', user_email).execute()
-            if users_result.data and len(users_result.data) > 0:
-                username = users_result.data[0].get('username')
-        except:
-            pass
-        
         user_data = {
             'email': user_email,
             'id': user_id,
-            'username': username,
         }
         
         return user_data
     except Exception as e:
         print(f"Auth error: {e}")
         return None
-    
-    return None
 
 def require_auth(f):
     """

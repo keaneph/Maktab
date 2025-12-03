@@ -1,18 +1,17 @@
 from flask import Blueprint, jsonify
-from services.supabase_client import supabase
+from services.business import user_service
 
 users_bp = Blueprint("users", __name__, url_prefix="/api/users")
 
 
-def format_user_row(row):
-    return {
-        "email": row["email"],
-    }
-
 # GET all users
 @users_bp.route("/", methods=["GET"])
 def list_users():
-    result = supabase.table("users").select("email").execute()
-    rows = result.data or []
-    return jsonify([format_user_row(r) for r in rows]), 200
+    try:
+        users = user_service.get_all()
+        return jsonify(users), 200
+    except Exception as e:
+        error_msg = f"Failed to fetch users: {str(e)}"
+        print(f"Database GET users error: {e}")
+        return jsonify({"error": error_msg}), 500
 
