@@ -9,6 +9,7 @@ import {
 } from "react"
 
 const DEFAULT_THEME = "blue"
+const THEME_STORAGE_KEY = "maktab-theme"
 
 type ThemeContextType = {
   activeTheme: string
@@ -17,18 +18,23 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-export function ActiveThemeProvider({
-  children,
-  initialTheme,
-}: {
-  children: ReactNode
-  initialTheme?: string
-}) {
-  const [activeTheme, setActiveTheme] = useState<string>(
-    () => initialTheme || DEFAULT_THEME
-  )
+export function ActiveThemeProvider({ children }: { children: ReactNode }) {
+  const [activeTheme, setActiveThemeState] = useState<string>(DEFAULT_THEME)
+  const [mounted, setMounted] = useState(false)
 
+  // Load theme from localStorage on mount
   useEffect(() => {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY)
+    if (stored) {
+      setActiveThemeState(stored)
+    }
+    setMounted(true)
+  }, [])
+
+  // Update body classes and save to localStorage when theme changes
+  useEffect(() => {
+    if (!mounted) return
+
     Array.from(document.body.classList)
       .filter((className) => className.startsWith("theme-"))
       .forEach((className) => {
@@ -38,7 +44,13 @@ export function ActiveThemeProvider({
     if (activeTheme.endsWith("-scaled")) {
       document.body.classList.add("theme-scaled")
     }
-  }, [activeTheme])
+
+    localStorage.setItem(THEME_STORAGE_KEY, activeTheme)
+  }, [activeTheme, mounted])
+
+  const setActiveTheme = (theme: string) => {
+    setActiveThemeState(theme)
+  }
 
   return (
     <ThemeContext.Provider value={{ activeTheme, setActiveTheme }}>

@@ -23,7 +23,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
     const supabase = createClient()
 
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
 
       if (!session) {
         handleUnauthenticated()
@@ -37,16 +39,16 @@ export function AuthGuard({ children }: AuthGuardProps) {
     checkAuth()
 
     // Listen for auth state changes (including logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_OUT" || !session) {
-          handleUnauthenticated()
-        } else if (event === "SIGNED_IN" && session) {
-          setIsAuthenticated(true)
-          setIsLoading(false)
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        handleUnauthenticated()
+      } else if (event === "SIGNED_IN" && session) {
+        setIsAuthenticated(true)
+        setIsLoading(false)
       }
-    )
+    })
 
     return () => {
       subscription.unsubscribe()
@@ -56,7 +58,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
       </div>
     )
   }
