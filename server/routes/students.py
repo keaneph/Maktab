@@ -1,35 +1,16 @@
 from flask import Blueprint, request, jsonify
-from services.database import get_db_cursor
 from services.auth import require_auth
+from services.business import student_service
 
 students_bp = Blueprint("students", __name__, url_prefix="/api/students")
-
-
-def format_student_row(row):
-    """Format a student row from the database."""
-    return {
-        "idNo": row["idNo"],
-        "firstName": row["firstName"],
-        "lastName": row["lastName"],
-        "course": row.get("course"),
-        "year": row.get("year"),
-        "gender": row.get("gender"),
-        "photo_path": row.get("photo_path"),
-    }
 
 
 # GET all students
 @students_bp.route("/", methods=["GET"])
 def get_students():
     try:
-        with get_db_cursor() as cur:
-            cur.execute('''
-                SELECT "idNo", "firstName", "lastName", course, year, gender, photo_path 
-                FROM students 
-                ORDER BY "idNo"
-            ''')
-            rows = cur.fetchall()
-        return jsonify([format_student_row(r) for r in rows]), 200
+        students = student_service.get_all()
+        return jsonify(students), 200
     except Exception as e:
         error_msg = f"Failed to fetch students: {str(e)}"
         print(f"Database GET students error: {e}")
@@ -42,24 +23,16 @@ def get_students():
 def create_student():
     try:
         data = request.get_json()
-        
-        with get_db_cursor() as cur:
-            cur.execute('''
-                INSERT INTO students ("idNo", "firstName", "lastName", course, year, gender, photo_path) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s) 
-                RETURNING "idNo", "firstName", "lastName", course, year, gender, photo_path
-            ''', (
-                data["idNo"],
-                data["firstName"],
-                data["lastName"],
-                data.get("course"),
-                data.get("year"),
-                data.get("gender"),
-                data.get("photo_path")
-            ))
-            new_student = cur.fetchone()
-        
-        return jsonify(format_student_row(new_student)), 201
+        student = student_service.create(
+            data["idNo"],
+            data["firstName"],
+            data["lastName"],
+            data.get("course"),
+            data.get("year"),
+            data.get("gender"),
+            data.get("photo_path")
+        )
+        return jsonify(student), 201
     except Exception as e:
         error_msg = f"Failed to create student: {str(e)}"
         print(f"Database CREATE student error: {e}")
@@ -72,29 +45,21 @@ def create_student():
 def update_student(id_no):
     try:
         data = request.get_json()
+        student = student_service.update(
+            id_no,
+            data["idNo"],
+            data["firstName"],
+            data["lastName"],
+            data.get("course"),
+            data.get("year"),
+            data.get("gender"),
+            data.get("photo_path")
+        )
         
-        with get_db_cursor() as cur:
-            cur.execute('''
-                UPDATE students 
-                SET "idNo" = %s, "firstName" = %s, "lastName" = %s, course = %s, year = %s, gender = %s, photo_path = %s 
-                WHERE "idNo" = %s 
-                RETURNING "idNo", "firstName", "lastName", course, year, gender, photo_path
-            ''', (
-                data["idNo"],
-                data["firstName"],
-                data["lastName"],
-                data.get("course"),
-                data.get("year"),
-                data.get("gender"),
-                data.get("photo_path"),
-                id_no
-            ))
-            updated_student = cur.fetchone()
-        
-        if not updated_student:
+        if not student:
             return jsonify({"error": "Student not found"}), 404
         
-        return jsonify(format_student_row(updated_student)), 200
+        return jsonify(student), 200
     except Exception as e:
         error_msg = f"Failed to update student: {str(e)}"
         print(f"Database UPDATE student error: {e}")
@@ -106,17 +71,12 @@ def update_student(id_no):
 @require_auth
 def delete_student(id_no):
     try:
-        with get_db_cursor() as cur:
-            cur.execute('''
-                DELETE FROM students WHERE "idNo" = %s 
-                RETURNING "idNo", "firstName", "lastName", course, year, gender, photo_path
-            ''', (id_no,))
-            deleted_student = cur.fetchone()
+        student = student_service.delete(id_no)
         
-        if not deleted_student:
+        if not student:
             return jsonify({"error": "Student not found"}), 404
         
-        return jsonify(format_student_row(deleted_student)), 200
+        return jsonify(student), 200
     except Exception as e:
         error_msg = f"Failed to delete student: {str(e)}"
         print(f"Database DELETE student error: {e}")
@@ -134,14 +94,8 @@ def bulk_delete_students():
         if not ids:
             return jsonify({"error": "No IDs provided"}), 400
         
-        with get_db_cursor() as cur:
-            cur.execute(
-                'DELETE FROM students WHERE "idNo" = ANY(%s) RETURNING "idNo"',
-                (ids,)
-            )
-            deleted_rows = cur.fetchall()
-        
-        return jsonify({"deleted": len(deleted_rows)}), 200
+        deleted_count = student_service.bulk_delete(ids)
+        return jsonify({"deleted": deleted_count}), 200
     except Exception as e:
         error_msg = f"Failed to bulk delete students: {str(e)}"
         print(f"Database BULK DELETE students error: {e}")
