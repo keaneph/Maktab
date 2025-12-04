@@ -4,6 +4,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -11,9 +12,12 @@ import {
   Loader2,
   Plus,
   Search,
+  X,
+  Check,
 } from "lucide-react"
 import {
   ColumnDef,
+  ColumnFiltersState,
   SortingState,
   flexRender,
   getCoreRowModel,
@@ -47,6 +51,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 interface AddFormHandlers {
   onSuccess: () => void
@@ -54,24 +64,23 @@ interface AddFormHandlers {
   setIsSubmitting: (isSubmitting: boolean) => void
 }
 
+export interface FilterableColumn {
+  id: string
+  label: string
+  options: { label: string; value: string }[]
+}
+
 interface DataTableProps<TData, TValue, TFormData = Partial<TData>> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  /** placeholder text for search input */
   searchPlaceholder?: string
-  /** dialog title (e.g. "Add College") */
   addTitle?: string
-  /** dialog description */
   addDescription?: string
-  /** hide the add button and dialog entirely */
   hideAddButton?: boolean
-  /** custom form fields for the dialog */
   renderAddForm?: (props: AddFormHandlers) => React.ReactNode
-  /** id of the form element inside add dialog; used by submit button */
   addFormId?: string
-  /** keys in row to search through */
   searchKeys?: string[]
-  // omissible function to handle form submission
+  filterableColumns?: FilterableColumn[]
   onAdd?: (formData: TFormData) => void
   onDelete?: (code: string) => Promise<void> | void
 }
@@ -86,9 +95,13 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
   renderAddForm,
   addFormId = "college-form",
   searchKeys = [],
+  filterableColumns = [],
 }: DataTableProps<TData, TValue, TFormData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = React.useState("")
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  )
   const [rowSelection, setRowSelection] = React.useState({})
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [isFormValid, setIsFormValid] = React.useState(false)
@@ -107,6 +120,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
     state: {
       sorting,
       globalFilter,
+      columnFilters,
       rowSelection,
     },
     getCoreRowModel: getCoreRowModel(),
@@ -115,6 +129,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
     globalFilterFn: (row, _columnId, filterValue) => {
       const search = filterValue.toLowerCase()
@@ -123,24 +138,135 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
         return val.toString().toLowerCase().includes(search)
       })
     },
+    filterFns: {
+      arrIncludesSome: (row, columnId, filterValue: string[]) => {
+        if (!filterValue || filterValue.length === 0) return true
+        const value = String(row.getValue(columnId))
+        return filterValue.includes(value)
+      },
+    },
   })
+
+  const getSelectedValues = (columnId: string): string[] => {
+    const filter = columnFilters.find((f) => f.id === columnId)
+    if (!filter?.value) return []
+    return Array.isArray(filter.value) ? filter.value : [filter.value as string]
+  }
+
+  const toggleFilterValue = (columnId: string, value: string) => {
+    setColumnFilters((prev) => {
+      const existing = prev.find((f) => f.id === columnId)
+      const currentValues = existing?.value
+        ? Array.isArray(existing.value)
+          ? existing.value
+          : [existing.value as string]
+        : []
+
+      let newValues: string[]
+      if (currentValues.includes(value)) {
+        newValues = currentValues.filter((v: string) => v !== value)
+      } else {
+        newValues = [...currentValues, value]
+      }
+
+      const otherFilters = prev.filter((f) => f.id !== columnId)
+      if (newValues.length === 0) return otherFilters
+      return [...otherFilters, { id: columnId, value: newValues }]
+    })
+  }
 
   return (
     <div>
-      {/* search and add div */}
-      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="relative flex w-full items-center py-4 md:max-w-sm">
-          <Input
-            placeholder={searchPlaceholder}
-            value={globalFilter ?? ""}
-            onChange={(event) => setGlobalFilter(event.target.value)}
-            className="max-w-sm pr-10"
-          />
-          <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
-            <Search className="h-4 w-4" />
-          </span>
+      {/* Toolbar */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          {/* Search Input */}
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+            <Input
+              placeholder={searchPlaceholder}
+              value={globalFilter ?? ""}
+              onChange={(event) => setGlobalFilter(event.target.value)}
+              className="pr-9 pl-9"
+            />
+            {globalFilter && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2 cursor-pointer"
+                onClick={() => setGlobalFilter("")}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+
+          {/* Multiselect Filter Dropdowns */}
+          {filterableColumns.map((filterCol) => {
+            const selectedValues = getSelectedValues(filterCol.id)
+            return (
+              <Popover key={filterCol.id}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "h-9 w-[180px] cursor-pointer justify-between",
+                      selectedValues.length > 0 && "border-primary"
+                    )}
+                  >
+                    <span className="max-w-[90px] truncate">
+                      {selectedValues.length === 0
+                        ? filterCol.label
+                        : selectedValues.length === 1
+                          ? filterCol.options.find(
+                              (o) => o.value === selectedValues[0]
+                            )?.label
+                          : `${selectedValues.length} selected`}
+                    </span>
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-2" align="start">
+                  <div className="max-h-[200px] space-y-1 overflow-y-auto">
+                    {filterCol.options.map((opt) => {
+                      const isSelected = selectedValues.includes(opt.value)
+                      return (
+                        <div
+                          key={opt.value}
+                          onClick={() =>
+                            toggleFilterValue(filterCol.id, opt.value)
+                          }
+                          className={cn(
+                            "hover:bg-accent flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm",
+                            isSelected && "bg-accent"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                              isSelected
+                                ? "bg-primary border-primary"
+                                : "border-input"
+                            )}
+                          >
+                            {isSelected && (
+                              <Check className="text-primary-foreground h-3 w-3" />
+                            )}
+                          </div>
+                          <span className="truncate">{opt.label}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )
+          })}
         </div>
-        <div className="flex items-center py-4">
+
+        {/* Add Button */}
+        <div className="flex items-center">
           {!hideAddButton && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -193,6 +319,7 @@ export function DataTable<TData, TValue, TFormData = Partial<TData>>({
           )}
         </div>
       </div>
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader className="from-primary/5 to-card bg-gradient-to-l shadow-xs">

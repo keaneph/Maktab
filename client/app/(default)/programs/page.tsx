@@ -114,6 +114,13 @@ export default function ProgramsPage() {
     }
   }
 
+  const collegeOptions = React.useMemo(() => {
+    return colleges.map((c) => ({
+      label: c.code,
+      value: c.code,
+    }))
+  }, [colleges])
+
   return (
     <>
       <SiteHeader title="Programs" />
@@ -139,6 +146,13 @@ export default function ProgramsPage() {
               addTitle="Add Program"
               addFormId="program-form"
               addDescription="Add a new program"
+              filterableColumns={[
+                {
+                  id: "college_code",
+                  label: "College",
+                  options: collegeOptions,
+                },
+              ]}
               renderAddForm={({
                 onSuccess,
                 onValidityChange,
