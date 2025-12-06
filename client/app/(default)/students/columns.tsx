@@ -499,6 +499,7 @@ export const columns = (
   },
   {
     accessorKey: "course",
+    filterFn: "arrIncludesSome",
     header: ({ column }) => {
       return (
         <Button
@@ -514,6 +515,7 @@ export const columns = (
   },
   {
     accessorKey: "year",
+    filterFn: "arrIncludesSome",
     header: ({ column }) => {
       return (
         <Button
@@ -529,6 +531,7 @@ export const columns = (
   },
   {
     accessorKey: "gender",
+    filterFn: "arrIncludesSome",
     header: ({ column }) => {
       return (
         <Button

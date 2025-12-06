@@ -123,6 +123,25 @@ export default function StudentsPage() {
     }
   }
 
+  const courseOptions = React.useMemo(() => {
+    const uniqueCourses = [
+      ...new Set(students.map((s) => s.course).filter(Boolean)),
+    ]
+    return uniqueCourses.map((course) => ({ label: course, value: course }))
+  }, [students])
+
+  const yearOptions = [
+    { label: "1st Year", value: "1" },
+    { label: "2nd Year", value: "2" },
+    { label: "3rd Year", value: "3" },
+    { label: "4th Year", value: "4" },
+  ]
+
+  const genderOptions = [
+    { label: "Male", value: "Male" },
+    { label: "Female", value: "Female" },
+  ]
+
   return (
     <>
       <SiteHeader title="Students" />
@@ -154,6 +173,11 @@ export default function StudentsPage() {
                 "course",
                 "year",
                 "gender",
+              ]}
+              filterableColumns={[
+                { id: "course", label: "Course", options: courseOptions },
+                { id: "year", label: "Year", options: yearOptions },
+                { id: "gender", label: "Gender", options: genderOptions },
               ]}
               renderAddForm={({
                 onSuccess,

@@ -13,14 +13,15 @@
 
 </h1>
 
-A web application for managing student information. It includes a modern Next.js + React frontend and a Flask backend that integrates with Supabase for authentication, and storage.
+A web application for managing student information. Features a Next.js + React frontend (statically exported) served by a Flask backend, with Supabase for authentication and PostgreSQL storage.
 
 ## Key features
 
-- Next.js 15 + React 19 frontend (TypeScript)
-- Flask backend (Python 3.13) providing API endpoints and Supabase integration
-- Supabase for auth, realtime, and Postgres storage
-- Tailwind CSS for styling and a collection of reusable UI components
+- Next.js 15 + React 19 frontend (TypeScript) with static export
+- Flask backend (Python 3.13) serving both the frontend and API endpoints
+- Supabase for authentication and PostgreSQL database
+- Tailwind CSS for styling with shadcn/ui components
+- Theme system with light/dark mode and 5 color variants (Default, Blue, Green, Amber, Mono)
 
 ## Who should read this
 
@@ -32,13 +33,15 @@ This README is focused on developers who want to run the project locally, contri
 
 Prerequisites
 
-- Node.js 20+ (for the `client`)
+- Node.js 20+ (for building the `client`)
 - Python 3.13 (for the `server`)
-- pipenv (optional; you can also use plain venv + pip)
+- pipenv (recommended)
 
-Open two terminals (one for frontend, one for backend) and run:
+### Development Mode (two servers)
 
-Frontend (client)
+For development with hot-reload, run the frontend and backend separately:
+
+**Terminal 1 — Frontend** (http://localhost:3000):
 
 ```powershell
 cd client
@@ -46,63 +49,64 @@ npm install
 npm run dev
 ```
 
-The frontend dev server runs at http://localhost:3000 by default.
-
-Backend (server)
-
-If you use pipenv (recommended for parity with this repo):
+**Terminal 2 — Backend** (http://localhost:5000):
 
 ```powershell
 cd server
 pipenv install      # first time only
 pipenv shell
-python -m flask run # runs on http://localhost:5000
-exit                # leave the virtualenv
+flask run
+```
+
+### Production Mode (single server)
+
+Build the frontend and serve everything from Flask:
+
+```powershell
+# Build the frontend static files
+cd client
+npm install
+npm run build       # outputs to client/out/
+
+# Run the Flask server (serves both frontend and API)
+cd ../server
+pipenv shell
+flask run           # access at http://localhost:5000
 ```
 
 **Environment variables**
 
-Create a `.env.local` file in the `client/` directory (or set env vars in your shell). Minimum vars used by the client:
+Create a `.env.local` file in the `client/` directory:
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=your-anon-key
+NEXT_PUBLIC_API_BASE_URL=                    # empty for production (same origin), or http://localhost:5000 for dev
 ```
 
-Create a `.env` file in the `server/` directory (or set env vars in your shell). Minimum vars used by the server:
+Create a `.env` file in the `server/` directory:
 
 ```text
 PIPENV_VENV_IN_PROJECT=1
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+DATABASE_URL=your-database-connection-string
 ```
 
 ## Project layout (top-level)
 
 ```
 README.md            # <- you are here
-client/              # Next.js frontend (TSX, Tailwind)
-server/              # Flask backend and API
+client/              # Next.js frontend (static export to out/)
+server/              # Flask backend (serves API + static frontend)
 ```
 
 ## Development notes
 
-- Frontend tech highlights: Next.js 15, React 19, TypeScript 5, Tailwind CSS 4.
-- Backend tech highlights: Flask, Flask-CORS, python-dotenv, Supabase Python client.
-- See `client/package.json` for available npm scripts (dev, build, start, lint).
+- Frontend tech highlights: Next.js 15 (static export), React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Radix UI.
+- Backend tech highlights: Flask, Flask-CORS, psycopg2, PyJWT, python-dotenv.
+- The Next.js app is configured with `output: "export"` to generate static HTML/JS/CSS in `client/out/`.
+- Flask serves these static files and handles SPA routing (all non-API routes fall back to `index.html`).
+- See `client/package.json` for available npm scripts (dev, build, lint).
 - See `server/Pipfile` for Python dependencies.
-- Theme system supports light/dark mode with custom color variants (Default, Blue, Green, Amber, and Mono).
-
-## Running production build
-
-Build frontend:
-
-```powershell
-cd client
-npm run build
-```
-
-Serve the frontend with `npm start` or deploy to a hosting provider. The backend can be run behind a WSGI server (e.g., Gunicorn) in production.
 
 ## Dashboard demo
 

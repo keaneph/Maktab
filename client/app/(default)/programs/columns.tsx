@@ -421,6 +421,7 @@ export const columns = (
   },
   {
     accessorKey: "college_code",
+    filterFn: "arrIncludesSome",
     header: ({ column }) => {
       return (
         <Button
