@@ -31,6 +31,7 @@ export type Students = {
   idNo: string
   firstName: string
   lastName: string
+  college_code: string
   course: string
   year: number
   gender: string
@@ -492,6 +493,22 @@ export const columns = (
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Last Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "college_code",
+    filterFn: "arrIncludesSome",
+    header: ({ column }) => {
+      return (
+        <Button
+          className="cursor-pointer"
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          College Code
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )

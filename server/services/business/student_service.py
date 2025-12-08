@@ -7,6 +7,7 @@ def _format_student(row):
         "idNo": row["idNo"],
         "firstName": row["firstName"],
         "lastName": row["lastName"],
+        "college_code": row.get("college_code"),
         "course": row.get("course"),
         "year": row.get("year"),
         "gender": row.get("gender"),

@@ -20,11 +20,14 @@ import {
 } from "@/lib/student-service"
 
 import { getPrograms } from "@/lib/program-service"
+import { getColleges } from "@/lib/college-service"
 import { Programs } from "../programs/columns"
+import { Colleges } from "../colleges/columns"
 
 export default function StudentsPage() {
   const [students, setStudents] = React.useState<Students[]>([])
   const [programs, setPrograms] = React.useState<Programs[]>([])
+  const [colleges, setColleges] = React.useState<Colleges[]>([])
   const { refreshCounts } = useCounts()
   const { refresh: refreshMetrics } = useDailyMetrics()
 
@@ -42,9 +45,14 @@ export default function StudentsPage() {
     const { showSkeleton = false } = options
     if (showSkeleton) setIsLoading(true)
     try {
-      const [s, p] = await Promise.all([getStudents(), getPrograms()])
+      const [s, p, c] = await Promise.all([
+        getStudents(),
+        getPrograms(),
+        getColleges(),
+      ])
       setStudents(s)
       setPrograms(p)
+      setColleges(c)
     } catch (err) {
       toast.error(`Error fetching data: ${(err as Error).message}`)
     } finally {
@@ -123,6 +131,13 @@ export default function StudentsPage() {
     }
   }
 
+  const collegeOptions = React.useMemo(() => {
+    return colleges.map((c) => ({
+      label: c.code,
+      value: c.code,
+    }))
+  }, [colleges])
+
   const courseOptions = React.useMemo(() => {
     const uniqueCourses = [
       ...new Set(students.map((s) => s.course).filter(Boolean)),
@@ -170,14 +185,20 @@ export default function StudentsPage() {
                 "idNo",
                 "firstName",
                 "lastName",
+                "college_code",
                 "course",
                 "year",
                 "gender",
               ]}
               filterableColumns={[
-                { id: "course", label: "Course", options: courseOptions },
-                { id: "year", label: "Year", options: yearOptions },
-                { id: "gender", label: "Gender", options: genderOptions },
+                {
+                  id: "college_code",
+                  label: "All College",
+                  options: collegeOptions,
+                },
+                { id: "course", label: "All Course", options: courseOptions },
+                { id: "year", label: "All Year", options: yearOptions },
+                { id: "gender", label: "All Gender", options: genderOptions },
               ]}
               renderAddForm={({
                 onSuccess,

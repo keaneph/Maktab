@@ -149,7 +149,7 @@ export default function ProgramsPage() {
               filterableColumns={[
                 {
                   id: "college_code",
-                  label: "College",
+                  label: "All Colleges",
                   options: collegeOptions,
                 },
               ]}

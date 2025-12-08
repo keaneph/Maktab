@@ -435,6 +435,21 @@ export function StudentForm({
               </div>
             ) : null}
           </Dropzone>
+          {props.files.length > 0 && props.files[0].errors.length > 0 && (
+            <p className="text-destructive text-sm font-medium">
+              {props.files[0].errors
+                .map((e) => {
+                  if (e.code === "file-too-large") {
+                    return `File exceeds 6 MB limit)`
+                  }
+                  if (e.code === "file-invalid-type") {
+                    return "Only image files are allowed"
+                  }
+                  return `${e.message}`
+                })
+                .join(", ")}
+            </p>
+          )}
         </div>
       </form>
     </Form>
